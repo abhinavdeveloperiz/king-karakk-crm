@@ -1,0 +1,86 @@
+{% extends "branchbase.html" %}
+{% load static %}
+
+{% block title %}Branch Profile{% endblock %}
+
+{% block content %}
+
+<div class="space-y-6">
+
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                <i data-lucide="user" class="w-6 h-6 text-white"></i>
+            </div>
+            Branch Profile
+        </h1>
+        <a href="{% url 'branch_dashboard' %}"
+           class="px-4 py-2 gradient-primary text-white rounded-xl hover:bg-gray-700 transition flex items-center gap-2 text-sm font-medium">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-2xl shadow p-8 flex flex-col md:flex-row gap-6">
+        <!-- Profile Picture -->
+        <div class="flex-shrink-0">
+            <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-600">
+                <img src="{% static 'images/logo.png' %}" alt="Profile Picture" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <!-- Profile Info -->
+        <div class="flex-1 flex flex-col justify-center gap-4">
+            <h2 class="text-2xl font-bold text-gray-900">Manama Branch</h2>
+            <p class="text-gray-500 text-sm">Branch Manager</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase">Email</h3>
+                    <p class="text-gray-700 font-medium">manama.branch@example.com</p>
+                </div>
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase">Phone</h3>
+                    <p class="text-gray-700 font-medium">+973 1234 5678</p>
+                </div>
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase">Role</h3>
+                    <p class="text-gray-700 font-medium">Branch Manager</p>
+                </div>
+                <div>
+                    <h3 class="text-xs text-gray-400 uppercase">Joined</h3>
+                    <p class="text-gray-700 font-medium">2024-01-10</p>
+                </div>
+            </div>
+
+            <!-- Edit Button -->
+            <div class="mt-6">
+                <button class="px-6 py-2 gradient-primary text-white rounded-xl font-medium hover:shadow-lg transition">
+                    Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional Recent Activity / Summary -->
+    <div class="bg-white rounded-2xl shadow p-6 mt-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <i data-lucide="activity" class="w-5 h-5 text-purple-600"></i>
+            Recent Activity
+        </h3>
+        <ul class="space-y-3 text-sm text-gray-700">
+            <li>Recorded sales entry of BD 1,200 on 2025-11-27</li>
+            <li>Added expense BD 450 for Milk Purchase on 2025-11-27</li>
+            <li>Updated branch details on 2025-11-26</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+
+{% endblock %}

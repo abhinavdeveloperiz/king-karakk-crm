@@ -1,0 +1,166 @@
+{% extends "branchbase.html" %}
+{% load static %}
+
+{% block title %}Branch Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Enhanced Page Header with Gradient -->
+<div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 p-8 shadow-2xl mb-8">
+    <div class="absolute inset-0 bg-grid-white/10"></div>
+    <div class="relative z-10">
+        <div class="flex items-center gap-4 mb-2">
+            <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                <i data-lucide="store" class="w-8 h-8 text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-white">Manama Dashboard</h1>
+                <p class="text-purple-100 text-sm mt-1">Here's today's performance of your branch</p>
+            </div>
+        </div>
+    </div>
+    <div class="absolute right-0 top-0 h-full w-64 bg-white/5 transform skew-x-12 translate-x-32"></div>
+</div>
+
+<!-- Enhanced Stats Cards -->
+<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Today Sales Card -->
+    <div class="relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 rounded-3xl shadow-xl p-6">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-end mb-4">
+                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <i data-lucide="arrow-up-circle" class="w-7 h-7 text-white"></i>
+                </div>
+                
+            </div>
+            <p class="text-white/90 text-sm font-medium mb-1">Today Sales</p>
+            <h2 class="text-3xl font-bold text-white">₹12,450</h2>
+        </div>
+    </div>
+
+    <!-- Today Expenses Card -->
+    <div class="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 rounded-3xl shadow-xl p-6">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-end mb-4">
+                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <i data-lucide="arrow-down-circle" class="w-7 h-7 text-white"></i>
+                </div>
+                
+            </div>
+            <p class="text-white/90 text-sm font-medium mb-1">Today Expenses</p>
+            <h2 class="text-3xl font-bold text-white">₹3,200</h2>
+        </div>
+    </div>
+
+    <!-- Balance Cash Card -->
+    <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl shadow-xl p-6 ">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-end mb-4">
+                <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    <i data-lucide="wallet" class="w-7 h-7 text-white"></i>
+                </div>
+               
+            </div>
+            <p class="text-white/90 text-sm font-medium mb-1">Balance Cash</p>
+            <h2 class="text-3xl font-bold text-white">₹9,250</h2>
+        </div>
+    </div>
+
+</div>
+
+<!-- Charts + Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+
+    <!-- Chart Section -->
+    <div class="lg:col-span-2 bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 px-8 py-6 border-b border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
+                </div>
+                Sales Overview
+            </h2>
+        </div>
+        <div class="h-72 flex items-center justify-center text-gray-400">
+            <div class="text-center">
+                <i data-lucide="bar-chart-3" class="w-16 h-16 text-gray-300 mx-auto mb-3"></i>
+                <p class="text-lg font-medium">(Sales Chart Coming Soon)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="space-y-4">
+
+        <!-- Add Sales/Expense -->
+        <a href="{% url 'branch_expense_sales_entry' %}"
+            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105">
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                        <i data-lucide="file-pen-line" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Add Sales / Expense</h3>
+                        <p class="text-gray-600 text-sm">Record today's entries</p>
+                    </div>
+                    <i data-lucide="arrow-right" class="w-5 h-5 text-purple-600 group-hover:translate-x-1 transition-transform duration-300"></i>
+                </div>
+            </div>
+        </a>
+
+        <!-- Profile -->
+        <a href="{% url 'branch_profile' %}"
+            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                        <i data-lucide="user" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Profile</h3>
+                        <p class="text-gray-600 text-sm">Manage branch details</p>
+                    </div>
+                    <i data-lucide="arrow-right" class="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform duration-300"></i>
+                </div>
+            </div>
+        </a>
+
+        <!-- Logout -->
+        <a href="/admin/login"
+            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105">
+            <div class="bg-gradient-to-br from-red-50 to-red-100 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                        <i data-lucide="log-out" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-red-600 mb-1">Logout</h3>
+                        <p class="text-gray-600 text-sm">Return to login screen</p>
+                    </div>
+                    <i data-lucide="arrow-right" class="w-5 h-5 text-red-600 group-hover:translate-x-1 transition-transform duration-300"></i>
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+</div>
+
+<style>
+    .bg-grid-white\/10 {
+        background-image: linear-gradient(white 1px, transparent 1px),
+                          linear-gradient(90deg, white 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.1;
+    }
+</style>
+
+{% endblock %}
