@@ -266,7 +266,7 @@
 
 
                 <div class="pt-4 mt-4 border-t border-gray-200">
-                    <a href="/admin/profile/"
+                    <a href="{% url 'admin_profile' %}"
                         class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition group">
                         <div
                             class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 group-hover:bg-gray-200 transition">
@@ -323,10 +323,10 @@
                                     document.addEventListener("DOMContentLoaded", () => {
                                         const searchMap = [
                                             { label: "Dashboard", url: "{% url 'admin_dashboard' %}" },
-                                            { label: "Branches", url: "/admin/branch/list/" },
-                                            { label: "Add Branch", url: "/admin/branch/add/" },
+                                            { label: "Branches", url: "{% url 'branch_list' %}" },
+                                            { label: "Add Branch", url: "{% url 'branch_add' %}" },
                                             { label: "Daily Report", url: "{% url 'daily_sales_report' %}" },
-                                            { label: "Profile", url: "/admin/profile/" },
+                                            { label: "Profile", url: "{% url 'admin_profile' %}" },
                                         ];
 
                                         const input = document.getElementById("globalSearch");
