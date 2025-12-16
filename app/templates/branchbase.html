@@ -20,6 +20,29 @@
     <!-- chart js  -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
+    <!-- fevicon icons  -->
+    <!-- Favicon for browsers -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/logo.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/logo.png">
+
+    <!-- ICO for older browsers (optional, same PNG as fallback) -->
+    <link rel="shortcut icon" href="/static/images/logo.png" type="image/x-icon">
+
+    <!-- Apple iOS (scaled automatically) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/logo.png">
+
+    <!-- Android / PWA (scaled automatically) -->
+    <link rel="manifest" href="/static/images/logo.png">
+
+    <!-- Safari pinned tab (SVG preferred, but using PNG fallback) -->
+    <link rel="mask-icon" href="/static/images/logo.png" color="#5bbad5">
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#ffffff">
+
+
+
     <style>
         * {
             font-family: 'Inter', sans-serif !important;
@@ -112,7 +135,8 @@
 
             <!-- Branch Info Card -->
             <div class="px-4 py-4 border-b border-gray-200">
-                <div class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 cursor-pointer">
+                <div
+                    class="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 cursor-pointer">
                     <div class="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-white">
                         <i data-lucide="store" class="w-5 h-5"></i>
                     </div>
@@ -139,7 +163,7 @@
                 </a>
 
                 <!-- Expense Entry -->
-                <a href="{% url 'branch_expense_sales_entry' %}"
+                <a href="{% url 'branch_expense_sales_list' %}"
                     class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition group">
                     <div class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center">
                         <i data-lucide="wallet" class="w-4 h-4 text-yellow-600"></i>
@@ -157,7 +181,7 @@
                 </a>
 
                 <!-- Logout -->
-                <a href="/branch/login"
+                <a href="{% url 'logout' %}"
                     class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition group">
                     <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
                         <i data-lucide="log-out" class="w-4 h-4 text-red-600"></i>
@@ -179,93 +203,94 @@
                     </button>
 
                     <div class="hidden md:flex items-center flex-1 max-w-xl">
-                            <div class="relative w-full">
+                        <div class="relative w-full">
+                            <i data-lucide="search"
+                                class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                            <div class="relative w-full max-w-xl">
                                 <i data-lucide="search"
                                     class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                                <div class="relative w-full max-w-xl">
-                                    <i data-lucide="search"
-                                        class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                                    <input id="globalSearch" type="text" placeholder="Search Branch, profile..."
-                                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition">
+                                <input id="globalSearch" type="text" placeholder="Search Branch, profile..."
+                                    class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition">
 
-                                    <!-- Dropdown container -->
-                                    <div id="searchDropdown"
-                                        class="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden max-h-60 overflow-y-auto">
-                                    </div>
+                                <!-- Dropdown container -->
+                                <div id="searchDropdown"
+                                    class="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden max-h-60 overflow-y-auto">
                                 </div>
-
-                                <script>
-                                    document.addEventListener("DOMContentLoaded", () => {
-                                        const searchMap = [
-                                            { label: "Dashboard", url: "{% url 'admin_dashboard' %}" },
-                                            { label: "Sales & Expense", url: "{% url 'branch_expense_sales_entry' %}" },
-                                            { label: "Daily Report", url: "{% url 'branch_expense_sales_entry' %}" },
-                                            { label: "Profile", url: "{% url 'branch_profile' %}" },
-                                        ];
-
-                                        const input = document.getElementById("globalSearch");
-                                        const dropdown = document.getElementById("searchDropdown");
-
-                                        let activeIndex = -1;
-
-                                        function renderResults(results) {
-                                            dropdown.innerHTML = "";
-                                            if (!results.length) {
-                                                dropdown.innerHTML = '<div class="px-3 py-2 text-gray-400 text-sm">No results found</div>';
-                                                dropdown.classList.remove("hidden");
-                                                return;
-                                            }
-
-                                            results.forEach((item, idx) => {
-                                                const el = document.createElement("div");
-                                                el.className = "px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between";
-                                                el.textContent = item.label;
-                                                el.dataset.index = idx;
-                                                el.addEventListener("click", () => window.location.href = item.url);
-                                                el.addEventListener("mouseover", () => setActive(idx));
-                                                dropdown.appendChild(el);
-                                            });
-
-                                            setActive(0);
-                                            dropdown.classList.remove("hidden");
-                                        }
-
-                                        function setActive(idx) {
-                                            const nodes = dropdown.querySelectorAll("div");
-                                            nodes.forEach(n => n.classList.remove("bg-purple-100"));
-                                            if (nodes[idx]) nodes[idx].classList.add("bg-purple-100");
-                                            activeIndex = idx;
-                                        }
-
-                                        input.addEventListener("input", () => {
-                                            const query = input.value.toLowerCase().trim();
-                                            if (!query) { dropdown.classList.add("hidden"); return; }
-                                            const results = searchMap.filter(i => i.label.toLowerCase().includes(query));
-                                            renderResults(results);
-                                        });
-
-                                        input.addEventListener("keydown", (e) => {
-                                            const nodes = dropdown.querySelectorAll("div");
-                                            if (!nodes.length) return;
-
-                                            if (e.key === "ArrowDown") { e.preventDefault(); setActive((activeIndex + 1) % nodes.length); }
-                                            if (e.key === "ArrowUp") { e.preventDefault(); setActive((activeIndex + nodes.length - 1) % nodes.length); }
-                                            if (e.key === "Enter") { e.preventDefault(); if (nodes[activeIndex]) nodes[activeIndex].click(); }
-                                            if (e.key === "Escape") dropdown.classList.add("hidden");
-                                        });
-
-                                        document.addEventListener("click", (e) => {
-                                            if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-                                                dropdown.classList.add("hidden");
-                                            }
-                                        });
-                                    });
-                                </script>
-
-
-
                             </div>
+
+                            <script>
+                                document.addEventListener("DOMContentLoaded", () => {
+                                    const searchMap = [
+                                        { label: "Dashboard", url: "{% url 'branch_dashboard' %}" },
+                                        { label: "Sales & Expense Entry", url: "{% url 'branch_expense_sales_list' %}" },
+                                        { label: "Daily Report", url: "{% url 'branch_expense_sales_list' %}" },
+                                        { label: "Profile", url: "{% url 'branch_profile' %}" },
+                                    ];
+
+
+                                    const input = document.getElementById("globalSearch");
+                                    const dropdown = document.getElementById("searchDropdown");
+
+                                    let activeIndex = -1;
+
+                                    function renderResults(results) {
+                                        dropdown.innerHTML = "";
+                                        if (!results.length) {
+                                            dropdown.innerHTML = '<div class="px-3 py-2 text-gray-400 text-sm">No results found</div>';
+                                            dropdown.classList.remove("hidden");
+                                            return;
+                                        }
+
+                                        results.forEach((item, idx) => {
+                                            const el = document.createElement("div");
+                                            el.className = "px-3 py-2 cursor-pointer hover:bg-purple-50 flex justify-between";
+                                            el.textContent = item.label;
+                                            el.dataset.index = idx;
+                                            el.addEventListener("click", () => window.location.href = item.url);
+                                            el.addEventListener("mouseover", () => setActive(idx));
+                                            dropdown.appendChild(el);
+                                        });
+
+                                        setActive(0);
+                                        dropdown.classList.remove("hidden");
+                                    }
+
+                                    function setActive(idx) {
+                                        const nodes = dropdown.querySelectorAll("div");
+                                        nodes.forEach(n => n.classList.remove("bg-purple-100"));
+                                        if (nodes[idx]) nodes[idx].classList.add("bg-purple-100");
+                                        activeIndex = idx;
+                                    }
+
+                                    input.addEventListener("input", () => {
+                                        const query = input.value.toLowerCase().trim();
+                                        if (!query) { dropdown.classList.add("hidden"); return; }
+                                        const results = searchMap.filter(i => i.label.toLowerCase().includes(query));
+                                        renderResults(results);
+                                    });
+
+                                    input.addEventListener("keydown", (e) => {
+                                        const nodes = dropdown.querySelectorAll("div");
+                                        if (!nodes.length) return;
+
+                                        if (e.key === "ArrowDown") { e.preventDefault(); setActive((activeIndex + 1) % nodes.length); }
+                                        if (e.key === "ArrowUp") { e.preventDefault(); setActive((activeIndex + nodes.length - 1) % nodes.length); }
+                                        if (e.key === "Enter") { e.preventDefault(); if (nodes[activeIndex]) nodes[activeIndex].click(); }
+                                        if (e.key === "Escape") dropdown.classList.add("hidden");
+                                    });
+
+                                    document.addEventListener("click", (e) => {
+                                        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                                            dropdown.classList.add("hidden");
+                                        }
+                                    });
+                                });
+                            </script>
+
+
+
                         </div>
+                    </div>
 
 
                     <button class="p-2 hover:bg-gray-100 rounded-lg transition">

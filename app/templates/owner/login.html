@@ -1,4 +1,4 @@
-{% extends "branchbase.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% block content %}
 
@@ -6,33 +6,42 @@
     <div class="max-w-md w-full bg-white shadow-lg rounded-xl p-8">
         <!-- Header -->
         <div class="text-center mb-6">
-            <div
-                class="w-24 h-auto mx-auto rounded-full flex items-center justify-center overflow-hidden">
+            <div class="w-24 h-auto mx-auto rounded-full flex items-center justify-center overflow-hidden">
                 <img src="{% static 'images/logo.png' %}" alt="Logo" class="w-24 h-auto object-contain" />
             </div>
 
-            <h1 class="text-2xl font-bold mt-4 text-gray-900 uppercase">Branch Login</h1>
+            <h1 class="text-2xl font-bold mt-4 text-gray-900">Admin Login</h1>
             <p class="text-gray-500 mt-1">Sign in to access the dashboard</p>
         </div>
 
+        <!-- Error Message -->
+        {% if error %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                {{ error }}
+            </div>
+        {% endif %}
+
         <!-- Login Form -->
-        <form action="{% url 'admin_login' %}" method="POST" class="space-y-4">
+        <form action="{% url 'login' %}" method="POST" class="space-y-4">
             {% csrf_token %}
-            <!-- Email -->
+            
+            <!-- Username -->
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                <input type="username" name="username" id="username" placeholder="Username"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-900" required>
+                <input type="text" name="username" id="username" placeholder="Username"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                    required>
             </div>
 
             <!-- Password -->
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                 <input type="password" name="password" id="password" placeholder="••••••••"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-900" required>
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                    required>
             </div>
 
-            <!-- Remember me & Forgot password -->
+            <!-- Remember me & Branch login link -->
             <div class="flex items-center justify-between">
                 <label class="inline-flex items-center">
                     <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600">

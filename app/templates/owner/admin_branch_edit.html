@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8 mt-10 border border-gray-100">
+    
+    <!-- Page Header -->
+    <h1 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3 uppercase">
+        <i data-lucide="edit" class="w-6 h-6 text-gray-700"></i>
+        Edit Branch Details
+    </h1>
+
+    <!-- Edit Branch Form -->
+    <form method="POST" action="{% url 'branch_edit' branch.id %}" class="space-y-5">
+        {% csrf_token %}
+
+        <!-- Branch Name -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
+            <input type="text" name="name" value="{{ branch.name }}"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 text-gray-800">
+        </div>
+
+        <!-- Branch Location -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <input type="text" name="location" value="{{ branch.location }}"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 text-gray-800">
+        </div>
+
+        <!-- Username -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <input type="text" name="username" value="{{ branch.user.username }}"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 text-gray-800">
+        </div>
+
+        <!-- Password (Optional) -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">New Password (optional)</label>
+            <input type="password" name="password" placeholder="Leave blank to keep old password"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 text-gray-800">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+            <button type="submit"
+                class="w-full px-4 py-2 gradient-primary text-white rounded-lg hover:opacity-90 transition font-medium flex items-center justify-center gap-2">
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                UPDATE BRANCH
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+
+{% endblock %}

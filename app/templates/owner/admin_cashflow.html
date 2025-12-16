@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="space-y-8">
+
+    <!-- PAGE HEADER -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center shadow">
+                <i data-lucide="wallet" class="w-7 h-7 text-white"></i>
+            </div>
+            Cash Flow Statement – All Branches
+        </h1>
+
+        <button id="exportExcelBtn"
+            class="px-6 py-2.5 gradient-primary text-white rounded-lg shadow-md hover:opacity-90 transition">
+            Export to Excel
+        </button>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="bg-white p-6 rounded-xl shadow border border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+        <div class="space-y-1">
+            <label class="text-gray-700 text-sm font-medium">Branch</label>
+            <select id="branchSelect"
+                class="px-4 py-2 border rounded-lg text-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-purple-400">
+                <option value="All Branches">All Branches</option>
+                <option>Manama Branch</option>
+                <option>Riffa Branch</option>
+                <option>Hamad Town Branch</option>
+            </select>
+        </div>
+
+        <div class="space-y-1">
+            <label class="text-gray-700 text-sm font-medium">Select Date</label>
+            <input type="date" id="selectedDate"
+                class="px-4 py-2 border rounded-lg text-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-purple-400" />
+        </div>
+
+        <div class="flex items-end">
+            <button
+                class="px-6 py-2 gradient-primary text-white rounded-lg shadow hover:opacity-90 transition w-full sm:w-auto">
+                Filter
+            </button>
+        </div>
+
+    </div>
+
+
+    <!-- CASH FLOW TABLE -->
+<div class="overflow-x-auto rounded-xl border border-gray-300 shadow-sm">
+
+    <table id="cashFlowTable" class="min-w-full text-sm">
+
+        <!-- TOP INFO BAR -->
+        <thead>
+            <tr class="bg-gray-100 border-b">
+                <td colspan="7"
+                    class="px-6 py-4 text-gray-800 font-medium flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <span id="branchInfo">
+                        <strong>BRANCH :</strong> All Branches
+                    </span>
+                    <span id="dateInfo">
+                        <strong>DATE :</strong> —
+                    </span>
+                </td>
+            </tr>
+        </thead>
+
+        <!-- MAIN HEADER -->
+        <thead class="gradient-primary text-white">
+            <tr>
+                <th class="px-6 py-3 text-left">DATE</th>
+                <th class="px-6 py-3 text-left">BRANCH</th>
+                <th class="px-6 py-3 text-left">DESCRIPTION</th>
+                <th class="px-6 py-3 text-left">SALES</th>
+                <th class="px-6 py-3 text-left">EXPENSES</th>
+                <th class="px-6 py-3 text-left">PURCHASE</th>
+                <th class="px-6 py-3 text-left">AMOUNT</th>
+            </tr>
+        </thead>
+
+        <tbody class="bg-white divide-y">
+
+            <!-- DAY 1 -->
+            <tr>
+                <td class="px-6 py-3">01-11-25</td>
+                <td class="px-6 py-3">Manama Branch</td>
+                <td class="px-6 py-3">Tea Sale</td>
+                <td class="px-6 py-3 text-green-600 font-semibold">BD 250</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 font-bold">BD 250</td>
+            </tr>
+
+            <tr>
+                <td class="px-6 py-3">01-11-25</td>
+                <td class="px-6 py-3">Manama Branch</td>
+                <td class="px-6 py-3">Rainbow Milk</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 text-red-600 font-semibold">BD 35</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 font-bold">BD -35</td>
+            </tr>
+
+            <tr>
+                <td class="px-6 py-3">01-11-25</td>
+                <td class="px-6 py-3">Manama Branch</td>
+                <td class="px-6 py-3">Packing Covers</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 text-red-600 font-semibold">BD 6</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 font-bold">BD -6</td>
+            </tr>
+
+            <!-- DAY 2 -->
+            <tr>
+                <td class="px-6 py-3">02-11-25</td>
+                <td class="px-6 py-3">Riffa Branch</td>
+                <td class="px-6 py-3">Tea Sale</td>
+                <td class="px-6 py-3 text-green-600 font-semibold">BD 260</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 font-bold">BD 260</td>
+            </tr>
+
+            <tr>
+                <td class="px-6 py-3">02-11-25</td>
+                <td class="px-6 py-3">Riffa Branch</td>
+                <td class="px-6 py-3">Cardamom</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 text-red-600 font-semibold">BD 22</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 font-bold">BD -22</td>
+            </tr>
+
+            <!-- DAY 2 Purchase Example -->
+            <tr>
+                <td class="px-6 py-3">02-11-25</td>
+                <td class="px-6 py-3">Riffa Branch</td>
+                <td class="px-6 py-3">Tea Powder Purchase</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3">—</td>
+                <td class="px-6 py-3 text-purple-600 font-semibold">BD 50</td>
+                <td class="px-6 py-3 font-bold">BD -50</td>
+            </tr>
+
+            <!-- TOTAL ROW -->
+            <tr class="bg-yellow-200 font-bold text-black">
+                <td colspan="6" class="px-6 py-3">CASH BALANCE TO COLLECT</td>
+                <td class="px-6 py-3">BD 397</td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+
+</div>
+
+
+<script>
+    // Update Top Info
+    const branchSelect = document.getElementById("branchSelect");
+    const selectedDate = document.getElementById("selectedDate");
+
+    branchSelect.addEventListener("change", () => {
+        document.getElementById("branchInfo").innerHTML =
+            `<strong>BRANCH :</strong> ${branchSelect.value}`;
+    });
+
+    selectedDate.addEventListener("change", () => {
+        document.getElementById("dateInfo").innerHTML =
+            `<strong>DATE :</strong> ${selectedDate.value}`;
+    });
+
+    // Excel Export
+    document.getElementById("exportExcelBtn").addEventListener("click", () => {
+        var table = document.getElementById("cashFlowTable");
+        var wb = XLSX.utils.table_to_book(table, { sheet: "CashFlow" });
+        XLSX.writeFile(wb, "Cash_Flow_Report.xlsx");
+    });
+
+    lucide.createIcons();
+</script>
+
+{% endblock %}

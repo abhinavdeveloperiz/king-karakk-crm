@@ -1,3 +1,4 @@
+<!-- ...existing code... -->
 {% extends "branchbase.html" %}
 {% block content %}
 
@@ -5,191 +6,108 @@
 
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 uppercase">
             <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <i data-lucide="store" class="w-6 h-6 text-white"></i>
             </div>
-            Manama Branch - Sales & Expenses
+            {{ branch.name }} - Today Sales
         </h1>
 
         <!-- Add Button -->
-        <button onclick="openAddModal()"
+        <a href="{% url 'branch_expense_sales_add' %}"
             class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium justify-center">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             Add Entry
-        </button>
+        </a>
     </div>
+    <!-- Messages -->
+    {% if messages %}
+    <div class="space-y-2 mt-4">
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-lg text-sm
+               {% if message.tags == 'error' %}bg-red-100 text-red-700
+               {% elif message.tags == 'success' %}bg-green-100 text-green-700
+               {% else %}bg-blue-100 text-blue-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
 
     <!-- Summary -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
         <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
             <h3 class="text-gray-500 text-sm">Total Sales</h3>
-            <p class="text-xl font-bold text-green-600">BD 15,200</p>
+            <p class="text-xl font-bold text-green-600">BD {{ total_sales}}</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
             <h3 class="text-gray-500 text-sm">Total Expenses</h3>
-            <p class="text-xl font-bold text-red-600">BD 6,750</p>
+            <p class="text-xl font-bold text-red-600">BD {{ total_expense }}</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
+            <h3 class="text-gray-500 text-sm">Total Purchase</h3>
+            <p class="text-xl font-bold text-purple-600">BD {{ total_purchase}}</p>
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
             <h3 class="text-gray-500 text-sm">Balance Cash</h3>
-            <p class="text-xl font-bold text-blue-600">BD 8,450</p>
+            <p class="text-xl font-bold text-blue-600">BD {{ balance_total}}</p>
         </div>
     </div>
 
-    <!-- Table Wrapper (for horizontal scroll on mobiles) -->
-    <!-- This Week Sales Table -->
-<div class="bg-white rounded-2xl p-6 shadow-md mt-8">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            <i data-lucide="calendar-days" class="w-5 h-5 text-purple-600"></i>
-            This Week Sales
-        </h2>
-    </div>
-
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sales (₹)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expenses (₹)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Balance Cash (₹)</th>
-                </tr>
-            </thead>
-
-            <tbody class="divide-y divide-gray-200 text-sm">
-                <tr>
-                    <td class="px-6 py-4 text-gray-800">Mon</td>
-                    <td class="px-6 py-4 font-medium text-green-600">₹2,400</td>
-                    <td class="px-6 py-4 font-medium text-red-600">₹300</td>
-                    <td class="px-6 py-4 font-medium text-blue-600">₹2,100</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 text-gray-800">Tue</td>
-                    <td class="px-6 py-4 font-medium text-green-600">₹3,100</td>
-                    <td class="px-6 py-4 font-medium text-red-600">₹500</td>
-                    <td class="px-6 py-4 font-medium text-blue-600">₹2,600</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 text-gray-800">Wed</td>
-                    <td class="px-6 py-4 font-medium text-green-600">₹1,950</td>
-                    <td class="px-6 py-4 font-medium text-red-600">₹200</td>
-                    <td class="px-6 py-4 font-medium text-blue-600">₹1,750</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 text-gray-800">Thu</td>
-                    <td class="px-6 py-4 font-medium text-green-600">₹2,780</td>
-                    <td class="px-6 py-4 font-medium text-red-600">₹350</td>
-                    <td class="px-6 py-4 font-medium text-blue-600">₹2,430</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 text-gray-800">Fri</td>
-                    <td class="px-6 py-4 font-medium text-green-600">₹3,400</td>
-                    <td class="px-6 py-4 font-medium text-red-600">₹600</td>
-                    <td class="px-6 py-4 font-medium text-blue-600">₹2,800</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 text-gray-800">Sat</td>
-                    <td class="px-6 py-4 font-medium text-green-600">₹4,200</td>
-                    <td class="px-6 py-4 font-medium text-red-600">₹700</td>
-                    <td class="px-6 py-4 font-medium text-blue-600">₹3,500</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 text-gray-800">Sun</td>
-                    <td class="px-6 py-4 font-medium text-green-600">₹3,850</td>
-                    <td class="px-6 py-4 font-medium text-red-600">₹450</td>
-                    <td class="px-6 py-4 font-medium text-blue-600">₹3,400</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-</div>
-
-<!-- ======================= POPUP ADD FORM ======================= -->
-<div id="addModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 sm:p-8 animate-fadeIn">
-
-        <div class="flex justify-between items-center mb-5">
-            <h2 class="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2 uppercase">
-                <i data-lucide="file-plus" class="w-5 h-5 text-purple-600"></i>
-                Add Entry
+    <!-- Transactions Table -->
+    <div class="bg-white rounded-2xl p-6 shadow-md mt-8">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <i data-lucide="calendar-days" class="w-5 h-5 text-purple-600"></i>
+                {{today}} Summary
             </h2>
-
-            <button onclick="closeAddModal()">
-                <i data-lucide="x" class="w-6 h-6 text-gray-600 hover:text-black"></i>
-            </button>
         </div>
 
-        <!-- FORM -->
-        <form method="POST">
-            {% csrf_token %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sales (BD)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expenses (BD)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchase (BD)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Balance (BD)</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Narration</th>
+                    </tr>
+                </thead>
 
-            <div class="mb-4">
-                <label class="text-sm text-gray-700 font-medium">Sales (BD)</label>
-                <input type="number" name="sales"
-                    class="mt-2 w-full px-4 py-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-purple-500"
-                    placeholder="Enter sales amount">
-            </div>
-
-            <div class="mb-4">
-                <label class="text-sm text-gray-700 font-medium">Expense (BD)</label>
-                <input type="number" name="expense"
-                    class="mt-2 w-full px-4 py-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-red-500"
-                    placeholder="Enter expense amount">
-            </div>
-
-            <div class="mb-4">
-                <label class="text-sm text-gray-700 font-medium">Narration</label>
-                <textarea name="narration" rows="3"
-                    class="mt-2 w-full px-4 py-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-purple-500"
-                    placeholder="Enter any notes..."></textarea>
-            </div>
-
-            <button
-                class="w-full py-3 gradient-primary text-white font-semibold rounded-xl shadow hover:shadow-lg transition">
-                Save Entry
-            </button>
-        </form>
+                <tbody class="divide-y divide-gray-200 text-sm">
+                    {% if transactions %}
+                    {% for t in transactions %}
+                    <tr>
+                        <td class="px-6 py-4 text-gray-800">{{ t.created_on|date:"h:i A" }}</td>
+                        <td class="px-6 py-4 font-medium text-green-600">{{ t.sales|default:"0.00"|floatformat:2 }}</td>
+                        <td class="px-6 py-4 font-medium text-red-600">{{ t.expense|default:"0.00"|floatformat:2 }}</td>
+                        <td class="px-6 py-4 font-medium text-purple-600">{{ t.purchase|default:"0.00"|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 font-medium text-blue-600">{{ t.balance|floatformat:2 }}</td>
+                        <td class="px-6 py-4 text-gray-600">{{ t.description|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-6 text-gray-500">No entry found</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
 </div>
 
 <script>
-    function openAddModal() {
-        document.getElementById("addModal").classList.remove("hidden");
-    }
-    function closeAddModal() {
-        document.getElementById("addModal").classList.add("hidden");
-    }
     lucide.createIcons();
 </script>
 
-<style>
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animate-fadeIn {
-        animation: fadeIn .25s ease-out;
-    }
-</style>
-
 {% endblock %}
+<!-- ...existing code... -->

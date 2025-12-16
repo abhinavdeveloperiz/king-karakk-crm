@@ -4,7 +4,7 @@
 <div class="space-y-6">
 
     <!-- Page Header -->
-   
+
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -13,6 +13,10 @@
             </div>
             Daily Report – All Branches
         </h1>
+
+        <button id="exportExcelBtn" class="px-5 py-2 gradient-primary text-white rounded-lg mt-4">
+            Export to Excel
+        </button>
 
     </div>
 
@@ -36,6 +40,9 @@
         <button class="px-5 py-2 gradient-primary text-white rounded-lg transition mt-5 sm:mt-7">
             Filter
         </button>
+
+
+
     </div>
 
     <!-- Summary Cards -->
@@ -65,20 +72,27 @@
 
     <!-- Data Table -->
     <div class="overflow-x-auto rounded-xl border border-gray-200">
-
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch
-                        Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance
-                        Cash</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Transactions</th>
+                        Branch Name
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Sales
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Expenses
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Purchase
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Balance Cash
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Transactions
+                    </th>
                 </tr>
             </thead>
 
@@ -88,6 +102,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">Manama Branch</td>
                     <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,850</td>
                     <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 700</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-purple-600 font-semibold">BD 300</td>
                     <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 1,150</td>
                     <td class="px-6 py-4 whitespace-nowrap text-gray-800">20</td>
                 </tr>
@@ -96,6 +111,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">Riffa Branch</td>
                     <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,400</td>
                     <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 600</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-purple-600 font-semibold">BD 250</td>
                     <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 800</td>
                     <td class="px-6 py-4 whitespace-nowrap text-gray-800">18</td>
                 </tr>
@@ -104,6 +120,7 @@
                     <td class="px-6 py-4 whitespace-nowrap">Hamad Town Branch</td>
                     <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,600</td>
                     <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 850</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-purple-600 font-semibold">BD 400</td>
                     <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 750</td>
                     <td class="px-6 py-4 whitespace-nowrap text-gray-800">20</td>
                 </tr>
@@ -112,10 +129,29 @@
         </table>
     </div>
 
+
 </div>
 
 <script>
     lucide.createIcons();
 </script>
+
+
+<script>
+    document.getElementById('exportExcelBtn').addEventListener('click', function () {
+        // Select the table
+        var table = document.querySelector('table');
+
+        // Convert table to worksheet
+        var wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+
+        // Export to Excel file
+        XLSX.writeFile(wb, "Daily_Report.xlsx");
+    });
+
+    // Initialize icons if you are using lucide
+    lucide.createIcons();
+</script>
+
 
 {% endblock %}
