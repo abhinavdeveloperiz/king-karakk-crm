@@ -1,103 +1,171 @@
-<!-- ...existing code... -->
 {% extends "branchbase.html" %}
 {% block content %}
 
-<div class="space-y-6">
+<div class="space-y-8">
 
-    <!-- Page Header -->
+    <!-- HEADER -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 uppercase">
             <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <i data-lucide="store" class="w-6 h-6 text-white"></i>
             </div>
-            {{ branch.name }} - Today Sales
+            {{ branch.name }} – {{ today|date:"M d" }} Summary
         </h1>
 
-        <!-- Add Button -->
         <a href="{% url 'branch_expense_sales_add' %}"
-            class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium justify-center">
+           class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             Add Entry
         </a>
     </div>
-    <!-- Messages -->
-    {% if messages %}
-    <div class="space-y-2 mt-4">
-        {% for message in messages %}
-        <div class="px-4 py-3 rounded-lg text-sm
-               {% if message.tags == 'error' %}bg-red-100 text-red-700
-               {% elif message.tags == 'success' %}bg-green-100 text-green-700
-               {% else %}bg-blue-100 text-blue-700{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
-
-    <!-- Summary -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
-            <h3 class="text-gray-500 text-sm">Total Sales</h3>
-            <p class="text-xl font-bold text-green-600">BD {{ total_sales}}</p>
+    <!-- SUMMARY CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Total Sales</h3>
+            <p class="text-xl font-bold text-green-600">BD {{ total_sales }}</p>
         </div>
 
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
-            <h3 class="text-gray-500 text-sm">Total Expenses</h3>
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Total Expenses</h3>
             <p class="text-xl font-bold text-red-600">BD {{ total_expense }}</p>
         </div>
 
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
-            <h3 class="text-gray-500 text-sm">Total Purchase</h3>
-            <p class="text-xl font-bold text-purple-600">BD {{ total_purchase}}</p>
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Total Purchase</h3>
+            <p class="text-xl font-bold text-purple-600">BD {{ total_purchase }}</p>
         </div>
 
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center text-center">
-            <h3 class="text-gray-500 text-sm">Balance Cash</h3>
-            <p class="text-xl font-bold text-blue-600">BD {{ balance_total}}</p>
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Balance Cash</h3>
+            <p class="text-xl font-bold text-blue-600">BD {{ balance_total }}</p>
         </div>
     </div>
 
-    <!-- Transactions Table -->
-    <div class="bg-white rounded-2xl p-6 shadow-md mt-8">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <i data-lucide="calendar-days" class="w-5 h-5 text-purple-600"></i>
-                {{today}} Summary
-            </h2>
-        </div>
+    <!-- SALES TABLE -->
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-green-600">Sales</h2>
 
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full border-collapse">
                 <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sales (BD)</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expenses (BD)</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchase (BD)</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Balance (BD)</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Narration</th>
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-6 py-3 text-center">Time</th>
+                        <th class="px-6 py-3 text-center">Reason</th>
+                        <th class="px-6 py-3 text-center">Amount (BD)</th>
+                        <th class="px-6 py-3 text-center">Narration</th>
                     </tr>
                 </thead>
 
-                <tbody class="divide-y divide-gray-200 text-sm">
-                    {% if transactions %}
-                    {% for t in transactions %}
-                    <tr>
-                        <td class="px-6 py-4 text-gray-800">{{ t.created_on|date:"h:i A" }}</td>
-                        <td class="px-6 py-4 font-medium text-green-600">{{ t.sales|default:"0.00"|floatformat:2 }}</td>
-                        <td class="px-6 py-4 font-medium text-red-600">{{ t.expense|default:"0.00"|floatformat:2 }}</td>
-                        <td class="px-6 py-4 font-medium text-purple-600">{{ t.purchase|default:"0.00"|floatformat:2 }}
+                <tbody class="divide-y text-sm">
+                    {% for t in sales_transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
                         </td>
-                        <td class="px-6 py-4 font-medium text-blue-600">{{ t.balance|floatformat:2 }}</td>
-                        <td class="px-6 py-4 text-gray-600">{{ t.description|default:"-" }}</td>
+                        <td class="px-6 py-4 text-center">
+                            {{ t.get_sales_category_display }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-semibold text-green-600 whitespace-nowrap">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No sales entries today
+                        </td>
                     </tr>
                     {% endfor %}
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center py-6 text-gray-500">No entry found</td>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- EXPENSE TABLE -->
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-red-600">Expenses</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-6 py-3 text-center">Time</th>
+                        <th class="px-6 py-3 text-center">Reason</th>
+                        <th class="px-6 py-3 text-center">Amount (BD)</th>
+                        <th class="px-6 py-3 text-center">Narration</th>
                     </tr>
-                    {% endif %}
+                </thead>
+
+                <tbody class="divide-y text-sm">
+                    {% for t in expense_transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {{ t.get_expense_category_display }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-semibold text-red-600 whitespace-nowrap">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No expense entries today
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PURCHASE TABLE -->
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-purple-600">Purchases</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-6 py-3 text-center">Time</th>
+                        <th class="px-6 py-3 text-center">Reason</th>
+                        <th class="px-6 py-3 text-center">Amount (BD)</th>
+                        <th class="px-6 py-3 text-center">Narration</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y text-sm">
+                    {% for t in purchase_transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {{ t.get_purchase_category_display }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-semibold text-purple-600 whitespace-nowrap">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No purchase entries today
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -110,4 +178,3 @@
 </script>
 
 {% endblock %}
-<!-- ...existing code... -->

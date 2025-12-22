@@ -2,13 +2,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
 from app import views
+from django.contrib import admin
 
 urlpatterns = [
+
+    path('category/', admin.site.urls),
 
 
     # ================== ADMIN  ==================
     path('branch/admin/login/', views.admin_and_branch_login, name='login'),
+    path("change-credentials/", views.change_superadmin_credentials, name="change_credentials"),
     path('branch/admin/logout/', views.admin_and_branch_logout, name='logout'),
+
     path('admin/profile/', views.admin_profile, name='admin_profile'),
 
     path('', views.admin_dashboard, name='admin_dashboard'),

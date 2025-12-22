@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect,get_object_or_404
 from .forms import BranchCreateForm,BranchEditForm
 from .models import Branch,User,Transaction
+from django.contrib.auth import update_session_auth_hash
 
 # branch forms 
 from .forms import BranchTransactionCreateForm
@@ -11,7 +12,7 @@ from django.contrib import messages
 from django.db.models import Sum
 from decimal import Decimal
 from django.utils import timezone
-
+from django.db.models import Sum, Case, When, DecimalField
 import json
 
 
@@ -19,33 +20,102 @@ import json
 
 
 
+
+
 def admin_and_branch_login(request):
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return redirect("admin_dashboard")
+        elif getattr(request.user, "is_branch", False):
+            return redirect("branch_dashboard")
+        else:
+            logout(request)
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        
+
         user = authenticate(request, username=username, password=password)
+
+        if user is None:
+            messages.error(request, "Invalid username or password.")
+            return redirect("login")   # IMPORTANT: redirect, not render
+
+        if not (user.is_superuser or getattr(user, "is_branch", False)):
+            messages.error(request, "You are not allowed to login here.")
+            return redirect("login")
+
+        login(request, user)
+
+        return redirect(
+            "admin_dashboard" if user.is_superuser else "branch_dashboard"
+        )
+
+    return render(request, "auth/login.html")
+
+
+
+
+
+@login_required(login_url="login")
+def change_superadmin_credentials(request):
+    user = request.user
+
+    if not user.is_superuser:
+        return redirect("login")
+
+    if request.method == "POST":
+        old_password = request.POST.get("old_password")
+        new_username = request.POST.get("new_username", "").strip()
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        # 1️⃣ Old password check
+        if not user.check_password(old_password):
+            messages.error(request, "Old password is incorrect.")
+            return redirect("change_credentials")
+
+        # 2️⃣ Password confirmation
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect("change_credentials")
+
+        # 3️⃣ No-change validation
+        username_unchanged = new_username == user.username
+        password_unchanged = user.check_password(new_password)
+
+        if username_unchanged and password_unchanged:
+            messages.error(
+                request,
+                "New username and password must be different from the current credentials."
+            )
+            return redirect("change_credentials")
         
-        if user is not None:
-            login(request, user)
-            if user.is_superuser:
-                return redirect("admin_dashboard")   
-            elif getattr(user, "is_branch", False):
-                return redirect("branch_dashboard") 
-            else:
-                # Normal users not allowed
-                error = "You are not allowed to login here."
-                return render(request, "owner/login.html", {"error": error})
-        else:
-            error = "Invalid username or password."
-            return render(request, "owner/login.html", {"error": error})
-    
-    return render(request, "owner/login.html")
+
+        if new_username and not username_unchanged:
+            user.username = new_username
+
+        # 5️⃣ Update password if changed
+        if not password_unchanged:
+            user.set_password(new_password)
+
+        user.save()
+        update_session_auth_hash(request, user)
+
+        messages.success(request, "Admin credentials updated successfully.")
+        return redirect("admin_profile")
+
+    return render(request, "auth/change_credentials.html")
+
+
+
 
 
 def admin_and_branch_logout(request):
     logout(request)
     return redirect("login")
+
+
 
 @login_required(login_url="login")
 def admin_profile(request):
@@ -157,8 +227,11 @@ def business_overview(request):
 
 
 
+
+
 @login_required(login_url="login")
 def branch_dashboard(request):
+
     try:
         branch = request.user.branch_account
     except Branch.DoesNotExist:
@@ -166,40 +239,63 @@ def branch_dashboard(request):
 
     today = timezone.localdate()
 
+    total_sales = total_expense = total_purchase = balance_total = Decimal("0.00")
+    chart_data = {"labels": [], "values": []}
+
     if branch:
         transactions = branch.transactions.filter(created_on__date=today)
 
         totals = transactions.aggregate(
-            total_sales=Sum('sales'),
-            total_expense=Sum('expense'),
-            total_purchase=Sum('purchase')
+            total_sales=Sum(
+                Case(
+                    When(transaction_type="SALE", then="amount"),
+                    default=Decimal("0.00"),
+                    output_field=DecimalField()
+                )
+            ),
+            total_expense=Sum(
+                Case(
+                    When(transaction_type="EXPENSE", then="amount"),
+                    default=Decimal("0.00"),
+                    output_field=DecimalField()
+                )
+            ),
+            total_purchase=Sum(
+                Case(
+                    When(transaction_type="PURCHASE", then="amount"),
+                    default=Decimal("0.00"),
+                    output_field=DecimalField()
+                )
+            ),
         )
 
-        total_sales = totals.get('total_sales') or Decimal('0.00')
-        total_expense = totals.get('total_expense') or Decimal('0.00')
-        total_purchase = totals.get('total_purchase') or Decimal('0.00')
+        total_sales = totals["total_sales"] or Decimal("0.00")
+        total_expense = totals["total_expense"] or Decimal("0.00")
+        total_purchase = totals["total_purchase"] or Decimal("0.00")
+
         balance_total = total_sales - total_expense - total_purchase
 
         chart_data = {
-            'labels': ['Sales', 'Expenses', 'Purchase'],
-            'values': [float(total_sales), float(total_expense), float(total_purchase)]
+            "labels": ["Sales", "Expenses", "Purchase"],
+            "values": [
+                float(total_sales),
+                float(total_expense),
+                float(total_purchase),
+            ],
         }
 
-    else:
-        total_sales = total_expense = total_purchase = balance_total = 0
-        chart_data = {'labels': [], 'values': []}
-
     context = {
-        'branch': branch,
-        'today': today,
-        'total_sales': total_sales,
-        'total_expense': total_expense,
-        'total_purchase': total_purchase,
-        'balance_total': balance_total,
-        'chart_data_json': json.dumps(chart_data)
+        "branch": branch,
+        "today": today,
+        "total_sales": total_sales,
+        "total_expense": total_expense,
+        "total_purchase": total_purchase,
+        "balance_total": balance_total,
+        "chart_data_json": json.dumps(chart_data),
     }
 
-    return render(request, 'branch/branch_dashboard.html', context)
+    return render(request, "branch/branch_dashboard.html", context)
+
 
 
 
@@ -207,37 +303,62 @@ def branch_dashboard(request):
 
 @login_required(login_url="login")
 def branch_expense_sales_list(request):
-   
     try:
         branch = request.user.branch_account
     except Branch.DoesNotExist:
-        messages.error(request, "You do not have a branch assigned. Please contact admin.")
+        messages.error(request, "You do not have a branch assigned.")
         return redirect("branch_dashboard")
-    
-    today = timezone.localdate() 
 
-    transactions = branch.transactions.filter(created_on__date=today).order_by('-created_on')
+    today = timezone.localdate()
+
+    transactions = branch.transactions.filter(
+        created_on__date=today
+    ).order_by("-created_on")
+
+    sales_transactions = transactions.filter(transaction_type="SALE")
+    expense_transactions = transactions.filter(transaction_type="EXPENSE")
+    purchase_transactions = transactions.filter(transaction_type="PURCHASE")
 
     totals = transactions.aggregate(
-        total_sales=Sum('sales'),
-        total_expense=Sum('expense'),
-        total_purchase=Sum('purchase')
+        total_sales=Sum(
+            Case(
+                When(transaction_type="SALE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
+        total_expense=Sum(
+            Case(
+                When(transaction_type="EXPENSE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
+        total_purchase=Sum(
+            Case(
+                When(transaction_type="PURCHASE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
     )
 
-    total_sales = totals.get('total_sales') or Decimal('0.00')
-    total_expense = totals.get('total_expense') or Decimal('0.00')
-    total_purchase = totals.get('total_purchase') or Decimal('0.00')
+    total_sales = totals["total_sales"] or Decimal("0.00")
+    total_expense = totals["total_expense"] or Decimal("0.00")
+    total_purchase = totals["total_purchase"] or Decimal("0.00")
 
     balance_total = total_sales - total_expense - total_purchase
 
     context = {
-        "transactions": transactions,
         "branch": branch,
+        "today": today,
+        "sales_transactions": sales_transactions,
+        "expense_transactions": expense_transactions,
+        "purchase_transactions": purchase_transactions,
         "total_sales": total_sales,
         "total_expense": total_expense,
         "total_purchase": total_purchase,
         "balance_total": balance_total,
-        "today": today,
     }
 
     return render(request, "branch/branch_expense_sales.html", context)
@@ -247,27 +368,56 @@ def branch_expense_sales_list(request):
 @login_required(login_url="login")
 def branch_expense_sales_entry(request):
     try:
-        branch = request.user.branch_account  
+        branch = request.user.branch_account
     except Branch.DoesNotExist:
         messages.error(request, "You do not have a branch assigned. Please contact admin.")
-        return redirect("branch_dashboard") 
+        return redirect("branch_dashboard")
 
     if request.method == "POST":
         form = BranchTransactionCreateForm(request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
             transaction.branch = branch
+            transaction.full_clean()  # important
             transaction.save()
-            messages.success(request, "Transaction added successfully.") 
+            messages.success(request, "Transaction added successfully.")
             return redirect("branch_expense_sales_list")
     else:
         form = BranchTransactionCreateForm()
-    
-    return render(request, "branch/branch_expense_sales_add.html", {"form": form})
+
+    return render(
+        request,
+        "branch/branch_expense_sales_add.html",
+        {"form": form}
+    )
+
+
 
 
 
 @login_required(login_url="login")
 def branch_profile(request):
-    return render(request, 'branch/branch_profile.html')
+    branch = Branch.objects.only("id", "name", "location").get(user=request.user)
 
+    recent_transactions = (
+        Transaction.objects
+        .filter(branch=branch)
+        .only(
+            "transaction_type",
+            "sales_category",
+            "purchase_category",
+            "expense_category",
+            "amount",
+            "created_on",
+        )
+        .order_by("-created_on")[:3]
+    )
+
+    return render(
+        request,
+        "branch/branch_profile.html",
+        {
+            "branch": branch,
+            "recent_transactions": recent_transactions,
+        },
+    )

@@ -8,24 +8,28 @@
 <div
     class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 p-8 shadow-2xl mb-8">
     <div class="absolute inset-0 bg-grid-white/10"></div>
+
     <div class="relative z-10 flex items-center gap-4 mb-2">
         <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
             <i data-lucide="store" class="w-8 h-8 text-white"></i>
         </div>
         <div>
-            <h1 class="text-xl font-bold text-white">{{ branch.name }} Dashboard</h1>
+            <h1 class="text-xl font-bold text-white">
+                {{ branch.name }} Dashboard
+            </h1>
             <p class="text-purple-100 text-sm mt-1">
                 Today's performance ({{ today|date:"D, d M Y" }})
             </p>
         </div>
     </div>
+
     <div class="absolute right-0 top-0 h-full w-64 bg-white/5 transform skew-x-12 translate-x-32"></div>
 </div>
 
 <!-- Stats Cards -->
-<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
 
-    <!-- Today Sales -->
+    <!-- Sales -->
     <div class="relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 rounded-3xl shadow-xl p-6">
         <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
             <i data-lucide="arrow-up-right" class="w-6 h-6 text-white"></i>
@@ -36,7 +40,7 @@
         </h2>
     </div>
 
-    <!-- Today Expenses -->
+    <!-- Expenses -->
     <div class="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 rounded-3xl shadow-xl p-6">
         <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
             <i data-lucide="arrow-down-right" class="w-6 h-6 text-white"></i>
@@ -47,7 +51,7 @@
         </h2>
     </div>
 
-    <!-- Today Purchase -->
+    <!-- Purchase -->
     <div class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl shadow-xl p-6">
         <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
             <i data-lucide="shopping-cart" class="w-6 h-6 text-white"></i>
@@ -58,7 +62,7 @@
         </h2>
     </div>
 
-    <!-- Balance Cash -->
+    <!-- Balance -->
     <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl shadow-xl p-6">
         <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
             <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
@@ -71,18 +75,16 @@
 
 </div>
 
-
 <!-- Charts + Quick Actions -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
 
-    <!-- Chart (ONLY alignment fixed) -->
-    <div class="lg:col-span-2 bg-red/20 rounded-3xl border border-gray-100 p-6 ">
+    <!-- Chart -->
+    <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6">
         <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-6">
             <i data-lucide="pie-chart" class="w-5 h-5 text-purple-600"></i>
-            Sales Overview {{today}}
+            Transaction Overview ({{ today }})
         </h2>
 
-        <!-- CENTERED CANVAS -->
         <div class="flex justify-center items-center min-h-[320px]">
             <div class="w-[360px]">
                 <canvas id="salesChart"></canvas>
@@ -93,27 +95,27 @@
     <!-- Quick Actions -->
     <div class="space-y-4">
 
-        <a href="{% url 'branch_expense_sales_list' %}"
-            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105">
+        <a href="{% url 'branch_expense_sales_add' %}"
+            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 hover:scale-105">
             <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 flex items-start gap-4">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
                     <i data-lucide="file-pen-line" class="w-7 h-7 text-white"></i>
                 </div>
                 <div class="flex-1">
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">Add Sales / Expense / Purchase</h3>
-                    <p class="text-gray-600 text-sm">Record today's entries</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">Add Transaction</h3>
+                    <p class="text-gray-600 text-sm">Sales / Expense / Purchase</p>
                 </div>
                 <i data-lucide="arrow-right"
-                    class="w-5 h-5 text-purple-600 group-hover:translate-x-1 transition-transform duration-300"></i>
+                    class="w-5 h-5 text-purple-600 group-hover:translate-x-1 transition-transform"></i>
             </div>
         </a>
 
         <a href="{% url 'branch_profile' %}"
-            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105">
+            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 hover:scale-105">
             <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 flex items-start gap-4">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                     <i data-lucide="user" class="w-7 h-7 text-white"></i>
                 </div>
                 <div class="flex-1">
@@ -121,23 +123,23 @@
                     <p class="text-gray-600 text-sm">Manage branch details</p>
                 </div>
                 <i data-lucide="arrow-right"
-                    class="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform duration-300"></i>
+                    class="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform"></i>
             </div>
         </a>
 
         <a href="{% url 'logout' %}"
-            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:scale-105">
+            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 hover:scale-105">
             <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 flex items-start gap-4">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
                     <i data-lucide="log-out" class="w-7 h-7 text-white"></i>
                 </div>
                 <div class="flex-1">
                     <h3 class="text-lg font-bold text-red-600 mb-1">Logout</h3>
-                    <p class="text-gray-600 text-sm">Return to login screen</p>
+                    <p class="text-gray-600 text-sm">Return to login</p>
                 </div>
-                <i class="w-5 h-5 text-red-600 group-hover:translate-x-1 transition-transform duration-300"
-                    data-lucide="arrow-right"></i>
+                <i data-lucide="arrow-right"
+                    class="w-5 h-5 text-red-600 group-hover:translate-x-1 transition-transform"></i>
             </div>
         </a>
 
@@ -155,11 +157,9 @@
             datasets: [{
                 data: chartData.values,
                 backgroundColor: [
-                    '#3BA4E8',
-                    '#FF6F91',
-                    '#FFA64D',
-                    '#4EC5C1',
-                    '#FFD166'
+                    '#22C55E', // Sales
+                    '#EF4444', // Expense
+                    '#A855F7'  // Purchase
                 ],
                 borderColor: '#ffffff',
                 borderWidth: 2
@@ -169,22 +169,13 @@
             responsive: true,
             plugins: {
                 legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 16,
-                        font: { size: 14 },
-                        color: '#374151'
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: ctx =>
-                            `${ctx.label}: BD ${ctx.raw.toFixed(2)}`
-                    }
+                    position: 'bottom'
                 }
             }
         }
     });
+
+    lucide.createIcons();
 </script>
 
 {% endblock %}

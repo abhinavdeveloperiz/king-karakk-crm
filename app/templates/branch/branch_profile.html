@@ -16,7 +16,7 @@
             Branch Profile
         </h1>
         <a href="{% url 'branch_dashboard' %}"
-           class="px-4 py-2 gradient-primary text-white rounded-xl hover:bg-gray-700 transition flex items-center gap-2 text-sm font-medium">
+            class="px-4 py-2 gradient-primary text-white rounded-xl hover:bg-gray-700 transition flex items-center gap-2 text-sm font-medium">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             Back to Dashboard
         </a>
@@ -33,34 +33,19 @@
 
         <!-- Profile Info -->
         <div class="flex-1 flex flex-col justify-center gap-4">
-            <h2 class="text-2xl font-bold text-gray-900">Manama Branch</h2>
-            <p class="text-gray-500 text-sm">Branch Manager</p>
+            <h2 class="text-2xl font-bold text-gray-900">{{ branch.name }}</h2>
+            <p class="text-gray-500 text-sm">Location: {{ branch.location }}</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div>
-                    <h3 class="text-xs text-gray-400 uppercase">Email</h3>
-                    <p class="text-gray-700 font-medium">manama.branch@example.com</p>
-                </div>
-                <div>
-                    <h3 class="text-xs text-gray-400 uppercase">Phone</h3>
-                    <p class="text-gray-700 font-medium">+973 1234 5678</p>
-                </div>
-                <div>
-                    <h3 class="text-xs text-gray-400 uppercase">Role</h3>
-                    <p class="text-gray-700 font-medium">Branch Manager</p>
-                </div>
-                <div>
-                    <h3 class="text-xs text-gray-400 uppercase">Joined</h3>
-                    <p class="text-gray-700 font-medium">2024-01-10</p>
-                </div>
-            </div>
+
 
             <!-- Edit Button -->
             <div class="mt-6">
-                <button class="px-6 py-2 gradient-primary text-white rounded-xl font-medium hover:shadow-lg transition">
-                    Edit Profile
-                </button>
+                <a href="https://wa.me/97145656031" target="_blank"
+                    class="inline-block px-6 py-2 gradient-primary text-white rounded-xl font-medium hover:shadow-lg transition">
+                    Contact Admin
+                </a>
             </div>
+
         </div>
     </div>
 
@@ -71,9 +56,32 @@
             Recent Activity
         </h3>
         <ul class="space-y-3 text-sm text-gray-700">
-            <li>Recorded sales entry of BD 1,200 on 2025-11-27</li>
-            <li>Added expense BD 450 for Milk Purchase on 2025-11-27</li>
-            <li>Updated branch details on 2025-11-26</li>
+            {% for t in recent_transactions %}
+            <li class="flex justify-between">
+                <span>
+                    {% if t.transaction_type == "SALE" %}
+                    Recorded <strong>Sales</strong>
+                    ({{ t.get_sales_category_display|default:"-" }})
+                    {% elif t.transaction_type == "PURCHASE" %}
+                    Added <strong>Purchase</strong>
+                    ({{ t.get_purchase_category_display|default:"-" }})
+                    {% elif t.transaction_type == "EXPENSE" %}
+                    Logged <strong>Expense</strong>
+                    ({{ t.get_expense_category_display|default:"-" }})
+                    {% endif %}
+                </span>
+
+                <span class="font-semibold">
+                    BD {{ t.amount|floatformat:2 }}
+                </span>
+            </li>
+
+            <li class="text-xs text-gray-400 ml-1">
+                {{ t.created_on|date:"M d" }}
+            </li>
+            {% empty %}
+            <li class="text-gray-500">No recent activity</li>
+            {% endfor %}
         </ul>
     </div>
 

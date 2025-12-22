@@ -45,14 +45,76 @@ class BranchEditForm(forms.Form):
 
 
 
+
 class BranchTransactionCreateForm(forms.ModelForm):
+
     class Meta:
         model = Transaction
-        fields = ["sales", "expense", "purchase", "description"]
+        fields = [
+            "transaction_type",
+            "sales_category",
+            "purchase_category",
+            "expense_category",
+            "amount",
+            "description",
+        ]
 
         widgets = {
-            "sales": forms.NumberInput(attrs={"class": "form-input w-full border-2 rounded-lg p-2", "placeholder": "Enter Sales"}),
-            "expense": forms.NumberInput(attrs={"class": "form-input w-full border-2 rounded-lg p-2", "placeholder": "Enter Expense"}),
-            "purchase": forms.NumberInput(attrs={"class": "form-input w-full border-2 rounded-lg p-2", "placeholder": "Enter Purchase"}),
-            "description": forms.Textarea(attrs={"class": "form-input w-full border-2 rounded-lg p-2", "rows": 2}),
+            "transaction_type": forms.Select(
+                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+            ),
+
+            "sales_category": forms.Select(
+                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+            ),
+
+            "purchase_category": forms.Select(
+                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+            ),
+
+            "expense_category": forms.Select(
+                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+            ),
+
+            "amount": forms.NumberInput(
+                attrs={
+                    "class": "form-input w-full border-2 rounded-lg p-2",
+                    "placeholder": "Enter Amount"
+                }
+            ),
+
+            "description": forms.Textarea(
+                attrs={
+                    "class": "form-input w-full border-2 rounded-lg p-2",
+                    "rows": 2
+                }
+            ),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tx_type = cleaned_data.get("transaction_type")
+
+        sales = cleaned_data.get("sales_category")
+        purchase = cleaned_data.get("purchase_category")
+        expense = cleaned_data.get("expense_category")
+
+        # Clear unused fields
+        if tx_type != "SALE":
+            cleaned_data["sales_category"] = None
+        if tx_type != "PURCHASE":
+            cleaned_data["purchase_category"] = None
+        if tx_type != "EXPENSE":
+            cleaned_data["expense_category"] = None
+
+        # Enforce required category
+        if tx_type == "SALE" and not sales:
+            self.add_error("sales_category", "Sales category is required")
+
+        if tx_type == "PURCHASE" and not purchase:
+            self.add_error("purchase_category", "Purchase category is required")
+
+        if tx_type == "EXPENSE" and not expense:
+            self.add_error("expense_category", "Expense category is required")
+
+        return cleaned_data

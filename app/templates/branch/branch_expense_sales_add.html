@@ -9,11 +9,11 @@
             <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <i data-lucide="file-plus" class="w-6 h-6 text-white"></i>
             </div>
-            Add Sales / Expense / Purchase Entry
+            Add Transaction
         </h1>
 
         <a href="{% url 'branch_expense_sales_list' %}"
-            class="px-4 py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition flex items-center gap-2 text-sm font-medium">
+           class="px-4 py-2 border border-gray-300 rounded-xl gradient-primary text-white transition flex items-center gap-2 text-sm font-medium">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             Back to List
         </a>
@@ -25,44 +25,87 @@
         <form method="POST">
             {% csrf_token %}
 
-            <!-- Sales -->
+            <!-- Transaction Type -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Sales (BD)</label>
-                {{ form.sales }}
-                {% if form.sales.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.sales.errors.0 }}</p>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Transaction Type
+                </label>
+                {{ form.transaction_type }}
+                {% if form.transaction_type.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.transaction_type.errors.0 }}
+                    </p>
                 {% endif %}
             </div>
 
-            <!-- Expense -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Expense (BD)</label>
-                {{ form.expense }}
-                {% if form.expense.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.expense.errors.0 }}</p>
+            <!-- Sales Category -->
+            <div id="sales-category" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Sales Reason
+                </label>
+                {{ form.sales_category }}
+                {% if form.sales_category.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.sales_category.errors.0 }}
+                    </p>
                 {% endif %}
             </div>
 
-            <!-- Purchase -->
+            <!-- Purchase Category -->
+            <div id="purchase-category" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Purchase Reason
+                </label>
+                {{ form.purchase_category }}
+                {% if form.purchase_category.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.purchase_category.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Expense Category -->
+            <div id="expense-category" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Expense Reason
+                </label>
+                {{ form.expense_category }}
+                {% if form.expense_category.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.expense_category.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Amount -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Purchase (BD)</label>
-                {{ form.purchase }}
-                {% if form.purchase.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.purchase.errors.0 }}</p>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Amount (BD)
+                </label>
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.amount.errors.0 }}
+                    </p>
                 {% endif %}
             </div>
 
             <!-- Description -->
             <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Narration</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Narration
+                </label>
                 {{ form.description }}
                 {% if form.description.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.description.errors.0 }}</p>
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.description.errors.0 }}
+                    </p>
                 {% endif %}
             </div>
 
             <!-- Submit Button -->
-            <button type="submit"
+            <button
+                type="submit"
                 class="w-full py-3 gradient-primary text-white font-semibold rounded-xl shadow hover:shadow-lg transition">
                 Save Entry
             </button>
@@ -74,6 +117,30 @@
 
 <script>
     lucide.createIcons();
+
+    const transactionType = document.getElementById("id_transaction_type");
+    const salesDiv = document.getElementById("sales-category");
+    const purchaseDiv = document.getElementById("purchase-category");
+    const expenseDiv = document.getElementById("expense-category");
+
+    function toggleCategories() {
+        const value = transactionType.value;
+
+        salesDiv.classList.add("hidden");
+        purchaseDiv.classList.add("hidden");
+        expenseDiv.classList.add("hidden");
+
+        if (value === "SALE") {
+            salesDiv.classList.remove("hidden");
+        } else if (value === "PURCHASE") {
+            purchaseDiv.classList.remove("hidden");
+        } else if (value === "EXPENSE") {
+            expenseDiv.classList.remove("hidden");
+        }
+    }
+
+    transactionType.addEventListener("change", toggleCategories);
+    toggleCategories(); // on page load (important for validation errors)
 </script>
 
 {% endblock %}
