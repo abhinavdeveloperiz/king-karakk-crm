@@ -1,89 +1,191 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="space-y-6">
+<div class="space-y-8">
 
-
+    <!-- HEADER -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 uppercase">
             <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <i data-lucide="store" class="w-6 h-6 text-white"></i>
             </div>
-            Manama Branch
+            {{ branch.name }} – {{ today_date|date:"M d" }} Summary
         </h1>
-        <a href="{% url 'branch_list' %}"
-            class="px-4 py-2 gradient-primary text-white rounded-xl hover:bg-gray-700 transition flex items-center gap-2 text-sm font-medium">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Add Branch
+
+        <a href=""
+            class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Add Entry
         </a>
     </div>
 
-    <!-- Filters -->
-    <div class="flex flex-wrap gap-4 items-center">
-        <select class="px-4 py-2 border rounded-lg text-gray-700">
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly" selected>Monthly</option>
-            <option value="yearly">Yearly</option>
-        </select>
-        <input type="date" class="px-4 py-2 border rounded-lg" />
-        <button class="px-4 py-2 gradient-primary text-white rounded-lg transition">Filter</button>
+    <!-- SUMMARY CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Total Sales</h3>
+            <p class="text-xl font-bold text-green-600">
+                BD {{ today_sales }}
+            </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Total Expenses</h3>
+            <p class="text-xl font-bold text-red-600">
+                BD {{ today_expenses }}
+            </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Total Purchase</h3>
+            <p class="text-xl font-bold text-purple-600">
+                BD {{ today_purchases }}
+            </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Balance Cash</h3>
+            <p class="text-xl font-bold text-blue-600">
+                BD {{ today_balance }}
+            </p>
+        </div>
     </div>
 
-    <!-- Sales & Expenses Summary -->
-    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center">
-            <h3 class="text-gray-500 text-sm">Total Sales</h3>
-            <p class="text-xl font-bold text-green-600">BD 15,200</p>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center">
-            <h3 class="text-gray-500 text-sm">Total Expenses</h3>
-            <p class="text-xl font-bold text-red-600">BD 6,750</p>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center">
-            <h3 class="text-gray-500 text-sm">Net Profit</h3>
-            <p class="text-xl font-bold text-blue-600">BD 8,450</p>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center">
-            <h3 class="text-gray-500 text-sm">Transactions</h3>
-            <p class="text-xl font-bold text-gray-800">120</p>
+    <!-- SALES TABLE -->
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-green-600">Sales</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-6 py-3 text-center">Time</th>
+                        <th class="px-6 py-3 text-center">Category</th>
+                        <th class="px-6 py-3 text-center">Amount (BD)</th>
+                        <th class="px-6 py-3 text-center">Narration</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y text-sm">
+                    {% for t in today_transactions %}
+                    {% if t.transaction_type == "SALE" %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {{ t.get_sales_category_display }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-semibold text-green-600 whitespace-nowrap">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+                        {% if t.description %}
+                        <td class="px-6 py-4 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                        {% else %}
+                        <td class="px-6 py-4 text-center text-gray-600 italic text-sm">
+                            NULL
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No sales entries today
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Sales Table -->
-    <div class="overflow-x-auto rounded-xl border border-gray-200">
-       
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales (BD)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses (BD)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net Profit (BD)</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">2025-11-27</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,200</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 450</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 750</td>
-                </tr>
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">2025-11-26</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,450</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 600</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 850</td>
-                </tr>
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">2025-11-25</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,000</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 300</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 700</td>
-                </tr>
-                <!-- Add more dummy rows -->
-            </tbody>
-        </table>
+    <!-- EXPENSE TABLE -->
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-red-600">Expenses</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-6 py-3 text-center">Time</th>
+                        <th class="px-6 py-3 text-center">Category</th>
+                        <th class="px-6 py-3 text-center">Amount (BD)</th>
+                        <th class="px-6 py-3 text-center">Narration</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y text-sm">
+                    {% for t in today_transactions %}
+                    {% if t.transaction_type == "EXPENSE" %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {{ t.get_expense_category_display }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-semibold text-red-600 whitespace-nowrap">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No expense entries today
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PURCHASE TABLE -->
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-purple-600">Purchases</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-6 py-3 text-center">Time</th>
+                        <th class="px-6 py-3 text-center">Category</th>
+                        <th class="px-6 py-3 text-center">Amount (BD)</th>
+                        <th class="px-6 py-3 text-center">Narration</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y text-sm">
+                    {% for t in today_transactions %}
+                    {% if t.transaction_type == "PURCHASE" %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {{ t.get_purchase_category_display }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-semibold text-purple-600 whitespace-nowrap">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No purchase entries today
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>

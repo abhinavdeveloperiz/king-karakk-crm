@@ -69,9 +69,15 @@
                         <td class="px-6 py-4 text-center font-semibold text-green-600 whitespace-nowrap">
                             BD {{ t.amount|floatformat:2 }}
                         </td>
+                        {% if t.description %}
                         <td class="px-6 py-4 text-center text-gray-600">
                             {{ t.description|default:"-" }}
                         </td>
+                        {% else %}
+                        <td class="px-6 py-4 text-center text-gray-600 italic text-sm">
+                            NULL
+                        </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>

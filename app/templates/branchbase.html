@@ -142,8 +142,19 @@
                     </div>
 
                     <div class="flex-1">
-                        <p class="font-semibold text-sm text-gray-900 truncate uppercase">Branch Name</p>
-                        <p class="text-xs text-gray-500">Branch Manager</p>
+                        <p class="font-semibold text-sm text-gray-900 truncate uppercase">
+                            {% if request.user.is_authenticated and request.user.is_branch %}
+                            {{ request.user.branch_account.name }} Branch
+                            {% else %}
+                            {% endif %}
+                        </p>
+
+                        <p class="text-xs text-gray-500 uppercase">
+                            {% if request.user.is_authenticated and request.user.is_branch %}
+                            {{ request.user.branch_account.location }} 
+                            {% else %}
+                            {% endif %}
+                        </p>
                     </div>
 
                     <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>

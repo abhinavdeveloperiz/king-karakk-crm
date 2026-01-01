@@ -23,8 +23,11 @@ urlpatterns = [
     path('admin/branch/list/', views.branch_list, name='branch_list'),
     path('admin/branch/add/', views.branch_add, name='branch_add'),
 
+
     path('admin/branch/<int:branch_id>/edit/', views.branch_edit, name='branch_edit'),
-    path('admin/branch/detail/', views.branch_detail, name='branch_detail'),
+
+    path("branches/<int:branch_id>/", views.branch_detail, name="branch_detail"),
+
     path('admin/branch/<int:branch_id>/delete/', views.branch_delete, name='branch_delete'),
 
     path('admin/branch/financial-overview/', views.branch_financial_overview, name='branch_financial_overview'),

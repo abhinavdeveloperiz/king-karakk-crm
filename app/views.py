@@ -5,15 +5,24 @@ from django.contrib.auth import update_session_auth_hash
 
 # branch forms 
 from .forms import BranchTransactionCreateForm
+
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.decorators import login_required
+
 from django.contrib import messages
-from django.db.models import Sum
-from decimal import Decimal
-from django.utils import timezone
+
 from django.db.models import Sum, Case, When, DecimalField
+from django.db.models.functions import TruncDate
+from decimal import Decimal
+
+
+
+from collections import defaultdict
+from django.utils import timezone
+from django.utils.timezone import now
 import json
+from datetime import datetime, time
 
 
 
@@ -125,9 +134,43 @@ def admin_profile(request):
 def admin_dashboard(request):
     return render(request, 'owner/admin_dashboard.html')
 
+
+
+
+
+
+
+
+
 @login_required(login_url="login")
 def daily_sales_report(request):
-    return render(request, 'owner/daily_sales_report.html')
+    today = timezone.localdate()
+
+    start_of_day = timezone.make_aware(datetime.combine(today, time.min))
+    end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+
+    # Fetch all today's transactions with branch in ONE query
+    transactions = (
+        Transaction.objects
+        .select_related("branch")
+        .filter(created_on__gte=start_of_day, created_on__lte=end_of_day)
+        .order_by("branch__name", "-created_on")
+    )
+
+    # Group transactions by branch
+    branch_data = defaultdict(list)
+    for tx in transactions:
+        branch_data[tx.branch].append(tx)
+
+    context = {
+        "today": today,
+        "branch_data": dict(branch_data),
+    }
+
+    return render(request, "owner/daily_sales_report.html", context)
+
+
+
 
 @login_required(login_url="login")
 def Admin_cashflow(request):
@@ -204,9 +247,57 @@ def branch_delete(request, branch_id):
 
 
 
+
+
+
+
+
 @login_required(login_url="login")
-def branch_detail(request):
-    return render(request, 'owner/admin_branch_detail.html')
+def branch_detail(request, branch_id):
+    branch = get_object_or_404(Branch, id=branch_id)
+
+    today = timezone.localdate()
+
+    start_of_day = timezone.make_aware(datetime.combine(today, time.min))
+    end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+   
+    today_transactions = Transaction.objects.filter(
+        branch=branch,
+        created_on__gte=start_of_day, created_on__lte=end_of_day
+    ).order_by("-created_on")
+
+   
+
+
+    today_sales = today_transactions.filter(
+        transaction_type="SALE"
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+    today_expenses = today_transactions.filter(
+        transaction_type="EXPENSE"
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+    today_purchases = today_transactions.filter(
+        transaction_type="PURCHASE"
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+  
+
+    today_balance = today_sales - (today_expenses + today_purchases)
+
+    context = {
+        "branch": branch,
+        "today_transactions": today_transactions,
+        "today_sales": today_sales,
+        "today_expenses": today_expenses,
+        "today_purchases": today_purchases,
+        "today_balance": today_balance,
+        "today_date": today,
+    }
+
+    return render(request, "owner/admin_branch_detail.html", context)
+
+
 
 
 
@@ -243,7 +334,9 @@ def branch_dashboard(request):
     chart_data = {"labels": [], "values": []}
 
     if branch:
-        transactions = branch.transactions.filter(created_on__date=today)
+        start_of_day = timezone.make_aware(datetime.combine(today, time.min))
+        end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+        transactions = branch.transactions.filter(created_on__gte=start_of_day, created_on__lte=end_of_day)
 
         totals = transactions.aggregate(
             total_sales=Sum(
@@ -311,8 +404,11 @@ def branch_expense_sales_list(request):
 
     today = timezone.localdate()
 
+    start_of_day = timezone.make_aware(datetime.combine(today, time.min))
+    end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+
     transactions = branch.transactions.filter(
-        created_on__date=today
+        created_on__gte=start_of_day, created_on__lte=end_of_day
     ).order_by("-created_on")
 
     sales_transactions = transactions.filter(transaction_type="SALE")
@@ -378,6 +474,8 @@ def branch_expense_sales_entry(request):
         if form.is_valid():
             transaction = form.save(commit=False)
             transaction.branch = branch
+            selected_date = form.cleaned_data['created_on']
+            transaction.created_on = timezone.make_aware(datetime.combine(selected_date, timezone.now().time()))
             transaction.full_clean()  # important
             transaction.save()
             messages.success(request, "Transaction added successfully.")

@@ -5,84 +5,116 @@
 
 {% block content %}
 
-<div class="space-y-6">
+<div class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-8">
 
-    <!-- Page Header -->
+    <!-- HEADER -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 uppercase">
             <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                <i data-lucide="user" class="w-6 h-6 text-white"></i>
+                <i data-lucide="store" class="w-6 h-6 text-white"></i>
             </div>
-            Branch Profile
+            {{ branch.name }} – Profile
         </h1>
+
         <a href="{% url 'branch_dashboard' %}"
-            class="px-4 py-2 gradient-primary text-white rounded-xl hover:bg-gray-700 transition flex items-center gap-2 text-sm font-medium">
+            class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Back to Dashboard
+            Dashboard
         </a>
     </div>
 
-    <!-- Profile Card -->
-    <div class="bg-white rounded-2xl shadow p-8 flex flex-col md:flex-row gap-6">
-        <!-- Profile Picture -->
-        <div class="flex-shrink-0">
-            <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-purple-600">
-                <img src="{% static 'images/logo.png' %}" alt="Profile Picture" class="w-full h-full object-cover">
-            </div>
-        </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Profile Info -->
-        <div class="flex-1 flex flex-col justify-center gap-4">
+        <!-- PROFILE CARD -->
+        <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 flex flex-col items-center text-center">
+
+            <!-- Logo -->
+            <div class="relative mb-6">
+                <div class="w-32 h-32 rounded-full overflow-hidden ring-4 ring-purple-100 shadow-lg">
+                    <img src="{% static 'images/logo.png' %}" alt="Branch Logo" class="w-full h-full object-cover">
+                </div>
+                <div
+                    class="absolute bottom-0 right-0 w-10 h-10 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                    <i data-lucide="check" class="w-5 h-5 text-white"></i>
+                </div>
+            </div>
+
             <h2 class="text-2xl font-bold text-gray-900">{{ branch.name }}</h2>
-            <p class="text-gray-500 text-sm">Location: {{ branch.location }}</p>
+            <p class="text-purple-600 font-medium text-sm mb-1">Branch</p>
+            <p class="text-gray-500 text-xs mb-6">{{ branch.location }}</p>
+
+            <!-- CONTACT -->
+            <a href="https://wa.me/97145656031" target="_blank"
+                class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg font-medium flex items-center justify-center gap-2">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                Contact Admin
+            </a>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="lg:col-span-2 space-y-6">
+
+    
 
 
+            <!-- QUICK ACTIONS -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h3>
 
-            <!-- Edit Button -->
-            <div class="mt-6">
-                <a href="https://wa.me/97145656031" target="_blank"
-                    class="inline-block px-6 py-2 gradient-primary text-white rounded-xl font-medium hover:shadow-lg transition">
-                    Contact Admin
-                </a>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+                    <!-- Dashboard -->
+                    <a href="{% url 'branch_dashboard' %}"
+                        class="group flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl hover:scale-105 transition shadow-lg">
+                        <i data-lucide="layout-dashboard" class="w-7 h-7 text-white"></i>
+                        <span class="text-sm font-bold text-white">Dashboard</span>
+                    </a>
+
+                    <!-- Add Entry -->
+                    <a href="{% url 'branch_expense_sales_add' %}"
+                        class="group flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl hover:scale-105 transition shadow-lg">
+                        <i data-lucide="plus-circle" class="w-7 h-7 text-white"></i>
+                        <span class="text-sm font-bold text-white">Add Entry</span>
+                    </a>
+
+                    <!-- Transactions -->
+                    <a href="{% url 'branch_expense_sales_list' %}"
+                        class="group flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl hover:scale-105 transition shadow-lg">
+                        <i data-lucide="list" class="w-7 h-7 text-white"></i>
+                        <span class="text-sm font-bold text-white">Transactions</span>
+                    </a>
+
+                </div>
+            </div>
+
+
+            <!-- RECENT ACTIVITY -->
+            <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+                <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="activity" class="w-5 h-5 text-purple-600"></i>
+                    Recent Activity
+                </h3>
+
+                <ul class="space-y-3 text-sm">
+                    {% for t in recent_transactions %}
+                    <li class="flex justify-between">
+                        <span class="text-gray-700">
+                            {{ t.transaction_type }}
+                        </span>
+                        <span class="font-semibold">
+                            BD {{ t.amount|floatformat:2 }}
+                        </span>
+                    </li>
+                    <li class="text-xs text-gray-400 ml-1">
+                        {{ t.created_on|date:"M d, h:i A" }}
+                    </li>
+                    {% empty %}
+                    <li class="text-gray-500">No recent activity</li>
+                    {% endfor %}
+                </ul>
             </div>
 
         </div>
-    </div>
-
-    <!-- Optional Recent Activity / Summary -->
-    <div class="bg-white rounded-2xl shadow p-6 mt-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <i data-lucide="activity" class="w-5 h-5 text-purple-600"></i>
-            Recent Activity
-        </h3>
-        <ul class="space-y-3 text-sm text-gray-700">
-            {% for t in recent_transactions %}
-            <li class="flex justify-between">
-                <span>
-                    {% if t.transaction_type == "SALE" %}
-                    Recorded <strong>Sales</strong>
-                    ({{ t.get_sales_category_display|default:"-" }})
-                    {% elif t.transaction_type == "PURCHASE" %}
-                    Added <strong>Purchase</strong>
-                    ({{ t.get_purchase_category_display|default:"-" }})
-                    {% elif t.transaction_type == "EXPENSE" %}
-                    Logged <strong>Expense</strong>
-                    ({{ t.get_expense_category_display|default:"-" }})
-                    {% endif %}
-                </span>
-
-                <span class="font-semibold">
-                    BD {{ t.amount|floatformat:2 }}
-                </span>
-            </li>
-
-            <li class="text-xs text-gray-400 ml-1">
-                {{ t.created_on|date:"M d" }}
-            </li>
-            {% empty %}
-            <li class="text-gray-500">No recent activity</li>
-            {% endfor %}
-        </ul>
     </div>
 
 </div>
@@ -92,3 +124,4 @@
 </script>
 
 {% endblock %}
+

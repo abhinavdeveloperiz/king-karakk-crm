@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.hashers import make_password
 from .models import User, Branch,Transaction
+from django.utils import timezone
 
 
 class BranchCreateForm(forms.Form):
@@ -48,6 +49,17 @@ class BranchEditForm(forms.Form):
 
 class BranchTransactionCreateForm(forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        today = timezone.now().date()
+        yesterday = today - timezone.timedelta(days=1)
+        tomorrow = today + timezone.timedelta(days=1)
+        self.fields['created_on'].widget.attrs.update({
+            'min': yesterday.isoformat(),
+            'max': tomorrow.isoformat(),
+        })
+        self.initial['created_on'] = today
+
     class Meta:
         model = Transaction
         fields = [
@@ -57,6 +69,7 @@ class BranchTransactionCreateForm(forms.ModelForm):
             "expense_category",
             "amount",
             "description",
+            "created_on",
         ]
 
         widgets = {
@@ -87,6 +100,13 @@ class BranchTransactionCreateForm(forms.ModelForm):
                 attrs={
                     "class": "form-input w-full border-2 rounded-lg p-2",
                     "rows": 2
+                }
+            ),
+
+            "created_on": forms.DateInput(
+                attrs={
+                    "type": "date",
+                    "class": "form-input w-full border-2 rounded-lg p-2"
                 }
             ),
         }

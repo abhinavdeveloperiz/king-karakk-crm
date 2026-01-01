@@ -1,157 +1,92 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="space-y-6">
+<div class="space-y-10">
 
-    <!-- Page Header -->
-
-
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div class="w-14 md:w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
-                <i data-lucide="bar-chart-3" class="w-6 h-6 text-white"></i>
-            </div>
-            Daily Report – All Branches
+    <!-- HEADER -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">
+            Daily Branch Report – {{ today|date:"M d, Y" }}
         </h1>
-
-        <button id="exportExcelBtn" class="px-5 py-2 gradient-primary text-white rounded-lg mt-4">
-            Export to Excel
-        </button>
-
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white p-5 rounded-xl shadow flex flex-wrap items-center gap-4 border border-gray-100">
+    {% for branch, transactions in branch_data.items %}
+    <div class="bg-white rounded-2xl shadow-md p-6 space-y-4">
 
+        <!-- Branch Name -->
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <i data-lucide="store" class="w-5 h-5 text-indigo-600"></i>
+            {{ branch.name }}
+        </h2>
 
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-4 py-3 text-center">Time</th>
+                        <th class="px-4 py-3 text-center">Type</th>
+                        <th class="px-4 py-3 text-center">Amount (BD)</th>
+                        <th class="px-4 py-3 text-center">Narration</th>
+                    </tr>
+                </thead>
 
-        <!-- Branch -->
-        <div>
-            <label class="text-gray-700 text-sm font-medium">Branch</label>
-            <select class="px-4 py-2 border rounded-lg text-gray-700 w-full">
-                <option value="all" selected>All Branches</option>
-                <option value="manama">Manama Branch</option>
-                <option value="riffa">Riffa Branch</option>
-                <option value="hamad">Hamad Town Branch</option>
-            </select>
+                <tbody class="divide-y text-sm">
+                    {% for t in transactions %}
+                    <tr class="hover:bg-gray-50">
+
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
+                        </td>
+
+                        <td class="px-4 py-3 text-center font-medium
+                            {% if t.transaction_type == 'SALE' %} text-green-600
+                            {% elif t.transaction_type == 'EXPENSE' %} text-red-600
+                            {% else %} text-purple-600 {% endif %}
+                        ">
+                            {{ t.transaction_type }}
+                        </td>
+
+                        <td class="px-4 py-3 text-center font-semibold whitespace-nowrap
+                            {% if t.transaction_type == 'SALE' %} text-green-600
+                            {% elif t.transaction_type == 'EXPENSE' %} text-red-600
+                            {% else %} text-purple-600 {% endif %}
+                        ">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+
+                        {% if t.description %}
+                        <td class="px-4 py-3 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                        {% else %}
+                        <td class="px-4 py-3 text-center text-gray-600 italic text-sm">
+                            NULL
+                        </td>
+                        {% endif %}
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No transactions today
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <!-- Button -->
-        <button class="px-5 py-2 gradient-primary text-white rounded-lg transition mt-5 sm:mt-7">
-            Filter
-        </button>
-
-
 
     </div>
-
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-5">
-
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center border border-gray-100">
-            <h3 class="text-gray-500 text-sm">Total Sales</h3>
-            <p class="text-xl font-bold text-green-600">BD 4,850</p>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center border border-gray-100">
-            <h3 class="text-gray-500 text-sm">Total Expenses</h3>
-            <p class="text-xl font-bold text-red-600">BD 2,150</p>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center border border-gray-100">
-            <h3 class="text-gray-500 text-sm">Balance Cash</h3>
-            <p class="text-xl font-bold text-blue-600">BD 2,700</p>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl shadow flex flex-col items-center border border-gray-100">
-            <h3 class="text-gray-500 text-sm">Total Transactions</h3>
-            <p class="text-xl font-bold text-gray-800">58</p>
-        </div>
-
+    {% empty %}
+    <div class="text-center py-10 text-gray-500">
+        No transactions recorded today.
     </div>
-
-    <!-- Data Table -->
-    <div class="overflow-x-auto rounded-xl border border-gray-200">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Branch Name
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Sales
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Expenses
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Purchase
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Balance Cash
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Transactions
-                    </th>
-                </tr>
-            </thead>
-
-            <tbody class="bg-white divide-y divide-gray-200">
-
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">Manama Branch</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,850</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 700</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-purple-600 font-semibold">BD 300</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 1,150</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-gray-800">20</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">Riffa Branch</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,400</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 600</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-purple-600 font-semibold">BD 250</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 800</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-gray-800">18</td>
-                </tr>
-
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">Hamad Town Branch</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">BD 1,600</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-red-600">BD 850</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-purple-600 font-semibold">BD 400</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-blue-600 font-bold">BD 750</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-gray-800">20</td>
-                </tr>
-
-            </tbody>
-        </table>
-    </div>
-
+    {% endfor %}
 
 </div>
 
 <script>
     lucide.createIcons();
 </script>
-
-
-<script>
-    document.getElementById('exportExcelBtn').addEventListener('click', function () {
-        // Select the table
-        var table = document.querySelector('table');
-
-        // Convert table to worksheet
-        var wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-
-        // Export to Excel file
-        XLSX.writeFile(wb, "Daily_Report.xlsx");
-    });
-
-    // Initialize icons if you are using lucide
-    lucide.createIcons();
-</script>
-
 
 {% endblock %}

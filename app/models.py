@@ -95,7 +95,7 @@ class Transaction(models.Model):
     )
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     created_on = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

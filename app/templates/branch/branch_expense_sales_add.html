@@ -38,6 +38,19 @@
                 {% endif %}
             </div>
 
+            <!-- Date -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Date
+                </label>
+                {{ form.created_on }}
+                {% if form.created_on.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.created_on.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
             <!-- Sales Category -->
             <div id="sales-category" class="mb-4 hidden">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
