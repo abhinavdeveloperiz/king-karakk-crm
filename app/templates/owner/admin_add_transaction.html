@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-3xl mx-auto py-10">
+
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                <i data-lucide="file-plus" class="w-6 h-6 text-white"></i>
+            </div>
+            Add Transaction to {{ branch.name }}
+        </h1>
+
+        <a href="{% url 'branch_detail' branch.id %}"
+           class="px-4 py-2 border border-gray-300 rounded-xl gradient-primary text-white transition flex items-center gap-2 text-sm font-medium">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Branch Detail
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Transaction Type -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Transaction Type
+                </label>
+                {{ form.transaction_type }}
+                {% if form.transaction_type.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.transaction_type.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Sales Category -->
+            <div class="mb-4" id="sales_category_div" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Sales Category
+                </label>
+                {{ form.sales_category }}
+                {% if form.sales_category.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.sales_category.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Purchase Category -->
+            <div class="mb-4" id="purchase_category_div" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Purchase Category
+                </label>
+                {{ form.purchase_category }}
+                {% if form.purchase_category.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.purchase_category.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Expense Category -->
+            <div class="mb-4" id="expense_category_div" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Expense Category
+                </label>
+                {{ form.expense_category }}
+                {% if form.expense_category.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.expense_category.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Amount -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Amount
+                </label>
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.amount.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.description.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Date -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Date
+                </label>
+                {{ form.created_on }}
+                {% if form.created_on.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.created_on.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit"
+                    class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition flex items-center justify-center gap-2">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                Add Transaction
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // Show/hide category fields based on transaction type
+    document.getElementById('id_transaction_type').addEventListener('change', function() {
+        const selectedType = this.value;
+        document.getElementById('sales_category_div').style.display = selectedType === 'SALE' ? 'block' : 'none';
+        document.getElementById('purchase_category_div').style.display = selectedType === 'PURCHASE' ? 'block' : 'none';
+        document.getElementById('expense_category_div').style.display = selectedType === 'EXPENSE' ? 'block' : 'none';
+    });
+
+    // Trigger on load
+    document.getElementById('id_transaction_type').dispatchEvent(new Event('change'));
+</script>
+
+{% endblock %}

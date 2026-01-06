@@ -12,7 +12,7 @@
             {{ branch.name }} – {{ today_date|date:"M d" }} Summary
         </h1>
 
-        <a href=""
+        <a href="{% url 'admin_add_transaction_to_branch' branch.id %}"
             class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             Add Entry

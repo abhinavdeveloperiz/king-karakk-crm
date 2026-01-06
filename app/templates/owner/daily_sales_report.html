@@ -10,7 +10,7 @@
         </h1>
     </div>
 
-    {% for branch, transactions in branch_data.items %}
+    {% for branch, data in branch_data.items %}
     <div class="bg-white rounded-2xl shadow-md p-6 space-y-4">
 
         <!-- Branch Name -->
@@ -19,6 +19,7 @@
             {{ branch.name }}
         </h2>
 
+        <!-- Transactions Table -->
         <div class="overflow-x-auto">
             <table class="min-w-full border-collapse">
                 <thead class="bg-gray-50">
@@ -31,7 +32,7 @@
                 </thead>
 
                 <tbody class="divide-y text-sm">
-                    {% for t in transactions %}
+                    {% for t in data.transactions %}
                     <tr class="hover:bg-gray-50">
 
                         <td class="px-4 py-3 text-center whitespace-nowrap">
@@ -54,15 +55,9 @@
                             BD {{ t.amount|floatformat:2 }}
                         </td>
 
-                        {% if t.description %}
                         <td class="px-4 py-3 text-center text-gray-600">
-                            {{ t.description|default:"-" }}
+                            {{ t.description|default:"NULL" }}
                         </td>
-                        {% else %}
-                        <td class="px-4 py-3 text-center text-gray-600 italic text-sm">
-                            NULL
-                        </td>
-                        {% endif %}
 
                     </tr>
                     {% empty %}
@@ -75,6 +70,26 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- CASH BALANCE -->
+        <div class="pt-4 border-t">
+            <div class="flex items-center justify-between">
+                <span class="text-base font-semibold text-gray-700">
+                    Cash Balance:
+                </span>
+
+                <span class="text-lg font-bold
+            {% if data.balance >= 0 %}
+                text-green-600
+            {% else %}
+                text-red-600
+            {% endif %}
+        ">
+                    BD {{ data.balance|floatformat:2 }}
+                </span>
+            </div>
+        </div>
+
 
     </div>
     {% empty %}

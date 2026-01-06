@@ -1,187 +1,156 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="space-y-8">
+<div class="space-y-10">
 
-    <!-- PAGE HEADER -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-4">
-            <div class="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center shadow">
-                <i data-lucide="wallet" class="w-7 h-7 text-white"></i>
-            </div>
-            Cash Flow Statement – All Branches
-        </h1>
-
-        <button id="exportExcelBtn"
-            class="px-6 py-2.5 gradient-primary text-white rounded-lg shadow-md hover:opacity-90 transition">
-            Export to Excel
-        </button>
-    </div>
+    <!-- HEADER -->
+    <h1 class="text-3xl font-bold text-gray-900 uppercase">
+        Monthly Cashflow
+    </h1>
 
     <!-- FILTERS -->
-    <div class="bg-white p-6 rounded-xl shadow border border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <form method="get" class="bg-white p-6 rounded-xl shadow grid grid-cols-1 sm:grid-cols-3 gap-6">
 
-        <div class="space-y-1">
-            <label class="text-gray-700 text-sm font-medium">Branch</label>
-            <select id="branchSelect"
-                class="px-4 py-2 border rounded-lg text-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-purple-400">
-                <option value="All Branches">All Branches</option>
-                <option>Manama Branch</option>
-                <option>Riffa Branch</option>
-                <option>Hamad Town Branch</option>
+        <div>
+            <label class="text-sm font-medium">Branch</label>
+            <select name="branch" class="w-full px-4 py-2 border rounded-lg">
+                <option value="all">All Branches</option>
+                {% for b in branches %}
+                <option value="{{ b.id }}"
+                    {% if selected_branch == b.id|stringformat:"s" %}selected{% endif %}>
+                    {{ b.name }}
+                </option>
+                {% endfor %}
             </select>
         </div>
 
-        <div class="space-y-1">
-            <label class="text-gray-700 text-sm font-medium">Select Date</label>
-            <input type="date" id="selectedDate"
-                class="px-4 py-2 border rounded-lg text-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-purple-400" />
+        <div>
+            <label class="text-sm font-medium">Month</label>
+            <input type="month" name="month" value="{{ selected_month }}"
+                   class="w-full px-4 py-2 border rounded-lg">
         </div>
 
         <div class="flex items-end">
-            <button
-                class="px-6 py-2 gradient-primary text-white rounded-lg shadow hover:opacity-90 transition w-full sm:w-auto">
-                Filter
+            <button class="w-full px-6 py-2 bg-indigo-600 text-white rounded-lg">
+                Apply Filters
             </button>
         </div>
+    </form>
 
+    <!-- ================= SUMMARY TABLE ================= -->
+    <div class="bg-white rounded-xl shadow border overflow-x-auto">
+
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th class="px-6 py-3">Date</th>
+                    <th class="px-6 py-3">Branch</th>
+                    <th class="px-6 py-3 text-right">Sales</th>
+                    <th class="px-6 py-3 text-right">Expense</th>
+                    <th class="px-6 py-3 text-right">Purchase</th>
+                    <th class="px-6 py-3 text-right">Cash Balance</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y">
+                {% for row in summary %}
+                <tr>
+                    <td class="px-6 py-3">{{ row.created_on__date|date:"d M Y" }}</td>
+                    <td class="px-6 py-3 font-medium">{{ row.branch__name }}</td>
+
+                    <td class="px-6 py-3 text-right text-green-600 font-semibold">
+                        BD {{ row.sales }}
+                    </td>
+
+                    <td class="px-6 py-3 text-right text-red-600 font-semibold">
+                        BD {{ row.expense }}
+                    </td>
+
+                    <td class="px-6 py-3 text-right text-purple-600 font-semibold">
+                        BD {{ row.purchase }}
+                    </td>
+
+                    <td class="px-6 py-3 text-right font-bold
+                        {% if row.is_positive %} text-green-600 {% else %} text-red-600 {% endif %}">
+                        {% if row.is_positive %}
+                            BD {{ row.net_display }}
+                        {% else %}
+                            BD -{{ row.net_display }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-6 text-gray-500">
+                        No data available
+                    </td>
+                </tr>
+                {% endfor %}
+
+                <tr class="bg-yellow-200 font-bold">
+                    <td colspan="5" class="px-6 py-3">
+                        TOTAL CASH BALANCE
+                    </td>
+                    <td class="px-6 py-3 text-right">
+                        BD {{ grand_total }}
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
     </div>
 
+    <!-- ================= TRANSACTION LIST ================= -->
+    <h2 class="text-xl font-semibold text-gray-800 mt-8">
+        All Transactions
+    </h2>
 
-    <!-- CASH FLOW TABLE -->
-<div class="overflow-x-auto rounded-xl border border-gray-300 shadow-sm">
+    <div class="bg-white rounded-xl shadow border overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-700 text-white">
+                <tr>
+                    <th class="px-6 py-3">Date</th>
+                    <th class="px-6 py-3">Branch</th>
+                    <th class="px-6 py-3">Type</th>
+                    <th class="px-6 py-3 text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for t in transactions %}
+                <tr>
+                    <td class="px-6 py-3">{{ t.created_on|date:"d M Y h:i A" }}</td>
+                    <td class="px-6 py-3">{{ t.branch.name }}</td>
+                    <td class="px-6 py-3">{{ t.transaction_type }}</td>
+                    <td class="px-6 py-3 text-right font-semibold">
+                        BD {{ t.amount }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <table id="cashFlowTable" class="min-w-full text-sm">
+    <!-- PAGINATION (PRESERVES FILTERS) -->
+    <div class="flex justify-center gap-4 mt-6">
+        {% if transactions.has_previous %}
+            <a href="?{{ query_string|cut:'page=' }}&page={{ transactions.previous_page_number }}"
+               class="px-4 py-2 border rounded">
+                Previous
+            </a>
+        {% endif %}
 
-        <!-- TOP INFO BAR -->
-        <thead>
-            <tr class="bg-gray-100 border-b">
-                <td colspan="7"
-                    class="px-6 py-4 text-gray-800 font-medium flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <span id="branchInfo">
-                        <strong>BRANCH :</strong> All Branches
-                    </span>
-                    <span id="dateInfo">
-                        <strong>DATE :</strong> —
-                    </span>
-                </td>
-            </tr>
-        </thead>
+        <span class="px-4 py-2">
+            Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}
+        </span>
 
-        <!-- MAIN HEADER -->
-        <thead class="gradient-primary text-white">
-            <tr>
-                <th class="px-6 py-3 text-left">DATE</th>
-                <th class="px-6 py-3 text-left">BRANCH</th>
-                <th class="px-6 py-3 text-left">DESCRIPTION</th>
-                <th class="px-6 py-3 text-left">SALES</th>
-                <th class="px-6 py-3 text-left">EXPENSES</th>
-                <th class="px-6 py-3 text-left">PURCHASE</th>
-                <th class="px-6 py-3 text-left">AMOUNT</th>
-            </tr>
-        </thead>
-
-        <tbody class="bg-white divide-y">
-
-            <!-- DAY 1 -->
-            <tr>
-                <td class="px-6 py-3">01-11-25</td>
-                <td class="px-6 py-3">Manama Branch</td>
-                <td class="px-6 py-3">Tea Sale</td>
-                <td class="px-6 py-3 text-green-600 font-semibold">BD 250</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 font-bold">BD 250</td>
-            </tr>
-
-            <tr>
-                <td class="px-6 py-3">01-11-25</td>
-                <td class="px-6 py-3">Manama Branch</td>
-                <td class="px-6 py-3">Rainbow Milk</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 text-red-600 font-semibold">BD 35</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 font-bold">BD -35</td>
-            </tr>
-
-            <tr>
-                <td class="px-6 py-3">01-11-25</td>
-                <td class="px-6 py-3">Manama Branch</td>
-                <td class="px-6 py-3">Packing Covers</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 text-red-600 font-semibold">BD 6</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 font-bold">BD -6</td>
-            </tr>
-
-            <!-- DAY 2 -->
-            <tr>
-                <td class="px-6 py-3">02-11-25</td>
-                <td class="px-6 py-3">Riffa Branch</td>
-                <td class="px-6 py-3">Tea Sale</td>
-                <td class="px-6 py-3 text-green-600 font-semibold">BD 260</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 font-bold">BD 260</td>
-            </tr>
-
-            <tr>
-                <td class="px-6 py-3">02-11-25</td>
-                <td class="px-6 py-3">Riffa Branch</td>
-                <td class="px-6 py-3">Cardamom</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 text-red-600 font-semibold">BD 22</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 font-bold">BD -22</td>
-            </tr>
-
-            <!-- DAY 2 Purchase Example -->
-            <tr>
-                <td class="px-6 py-3">02-11-25</td>
-                <td class="px-6 py-3">Riffa Branch</td>
-                <td class="px-6 py-3">Tea Powder Purchase</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3">—</td>
-                <td class="px-6 py-3 text-purple-600 font-semibold">BD 50</td>
-                <td class="px-6 py-3 font-bold">BD -50</td>
-            </tr>
-
-            <!-- TOTAL ROW -->
-            <tr class="bg-yellow-200 font-bold text-black">
-                <td colspan="6" class="px-6 py-3">CASH BALANCE TO COLLECT</td>
-                <td class="px-6 py-3">BD 397</td>
-            </tr>
-
-        </tbody>
-    </table>
-</div>
+        {% if transactions.has_next %}
+            <a href="?{{ query_string|cut:'page=' }}&page={{ transactions.next_page_number }}"
+               class="px-4 py-2 border rounded">
+                Next
+            </a>
+        {% endif %}
+    </div>
 
 </div>
-
-
-<script>
-    // Update Top Info
-    const branchSelect = document.getElementById("branchSelect");
-    const selectedDate = document.getElementById("selectedDate");
-
-    branchSelect.addEventListener("change", () => {
-        document.getElementById("branchInfo").innerHTML =
-            `<strong>BRANCH :</strong> ${branchSelect.value}`;
-    });
-
-    selectedDate.addEventListener("change", () => {
-        document.getElementById("dateInfo").innerHTML =
-            `<strong>DATE :</strong> ${selectedDate.value}`;
-    });
-
-    // Excel Export
-    document.getElementById("exportExcelBtn").addEventListener("click", () => {
-        var table = document.getElementById("cashFlowTable");
-        var wb = XLSX.utils.table_to_book(table, { sheet: "CashFlow" });
-        XLSX.writeFile(wb, "Cash_Flow_Report.xlsx");
-    });
-
-    lucide.createIcons();
-</script>
 
 {% endblock %}
