@@ -546,9 +546,20 @@ def branch_expense_sales_list(request):
         return redirect("branch_dashboard")
 
     today = timezone.localdate()
+    
+    # Get selected date from request, default to today
+    selected_date_str = request.GET.get("date")
+    if selected_date_str:
+        try:
+            from datetime import datetime as dt
+            selected_date = dt.strptime(selected_date_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            selected_date = today
+    else:
+        selected_date = today
 
-    start_of_day = timezone.make_aware(datetime.combine(today, time.min))
-    end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+    start_of_day = timezone.make_aware(datetime.combine(selected_date, time.min))
+    end_of_day = timezone.make_aware(datetime.combine(selected_date, time.max))
 
     transactions = branch.transactions.filter(
         created_on__gte=start_of_day, created_on__lte=end_of_day
@@ -591,6 +602,7 @@ def branch_expense_sales_list(request):
     context = {
         "branch": branch,
         "today": today,
+        "selected_date": selected_date,
         "sales_transactions": sales_transactions,
         "expense_transactions": expense_transactions,
         "purchase_transactions": purchase_transactions,

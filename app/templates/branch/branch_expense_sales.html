@@ -9,14 +9,22 @@
             <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <i data-lucide="store" class="w-6 h-6 text-white"></i>
             </div>
-            {{ branch.name }} – {{ today|date:"M d" }} Summary
+            {{ branch.name }} – {{ selected_date|date:"M d" }} Summary
         </h1>
 
-        <a href="{% url 'branch_expense_sales_add' %}"
-           class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            Add Entry
-        </a>
+        <div class="flex flex-col sm:flex-row gap-3 items-center">
+            <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow border border-gray-200">
+                <i data-lucide="calendar" class="w-4 h-4 text-gray-600"></i>
+                <input type="date" id="dateFilter" value="{{ selected_date|date:'Y-m-d' }}" 
+                       class="border-none outline-none text-sm font-medium text-gray-700" onchange="filterByDate(this.value)">
+            </div>
+
+            <a href="{% url 'branch_expense_sales_add' %}"
+               class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                Add Entry
+            </a>
+        </div>
     </div>
 
     <!-- SUMMARY CARDS -->
@@ -82,7 +90,7 @@
                     {% empty %}
                     <tr>
                         <td colspan="4" class="py-6 text-center text-gray-500">
-                            No sales entries today
+                            No sales entries on {{ selected_date|date:"M d, Y" }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -125,7 +133,7 @@
                     {% empty %}
                     <tr>
                         <td colspan="4" class="py-6 text-center text-gray-500">
-                            No expense entries today
+                            No expense entries on {{ selected_date|date:"M d, Y" }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -181,6 +189,12 @@
 
 <script>
     lucide.createIcons();
+
+    function filterByDate(date) {
+        if (date) {
+            window.location.href = "?date=" + date;
+        }
+    }
 </script>
 
 {% endblock %}
