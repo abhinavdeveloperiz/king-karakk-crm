@@ -77,6 +77,19 @@
                 {% endif %}
             </div>
 
+            <!-- Cash Balance Category -->
+            <div class="mb-4" id="cashbalance_category_div" style="display: none;">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Cash Balance Type
+                </label>
+                {{ form.cashbalance_category }}
+                {% if form.cashbalance_category.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                        {{ form.cashbalance_category.errors.0 }}
+                    </p>
+                {% endif %}
+            </div>
+
             <!-- Amount -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -138,6 +151,7 @@
         document.getElementById('sales_category_div').style.display = selectedType === 'SALE' ? 'block' : 'none';
         document.getElementById('purchase_category_div').style.display = selectedType === 'PURCHASE' ? 'block' : 'none';
         document.getElementById('expense_category_div').style.display = selectedType === 'EXPENSE' ? 'block' : 'none';
+        document.getElementById('cashbalance_category_div').style.display = selectedType === 'CASHBALANCE' ? 'block' : 'none';
     });
 
     // Trigger on load

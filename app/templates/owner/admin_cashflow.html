@@ -49,6 +49,7 @@
                     <th class="px-6 py-3 text-right">Expense</th>
                     <th class="px-6 py-3 text-right">Purchase</th>
                     <th class="px-6 py-3 text-right">Cash Balance</th>
+                    <th class="px-6 py-3 text-right">Expected Sales</th>
                 </tr>
             </thead>
 
@@ -70,6 +71,10 @@
                         BD {{ row.purchase }}
                     </td>
 
+                    <td class="px-6 py-3 text-right text-orange-600 font-semibold">
+                        BD {{ row.cashbalance }}
+                    </td>
+
                     <td class="px-6 py-3 text-right font-bold
                         {% if row.is_positive %} text-green-600 {% else %} text-red-600 {% endif %}">
                         {% if row.is_positive %}
@@ -81,15 +86,15 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center py-6 text-gray-500">
+                    <td colspan="7" class="text-center py-6 text-gray-500">
                         No data available
                     </td>
                 </tr>
                 {% endfor %}
 
                 <tr class="bg-yellow-200 font-bold">
-                    <td colspan="5" class="px-6 py-3">
-                        TOTAL CASH BALANCE
+                    <td colspan="6" class="px-6 py-3">
+                        TOTAL EXPECTED SALES
                     </td>
                     <td class="px-6 py-3 text-right">
                         BD {{ grand_total }}

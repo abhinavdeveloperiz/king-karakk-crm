@@ -20,7 +20,7 @@
     </div>
 
     <!-- SUMMARY CARDS -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
         <div class="bg-white p-5 rounded-xl shadow text-center">
             <h3 class="text-sm text-gray-500">Total Sales</h3>
             <p class="text-xl font-bold text-green-600">
@@ -43,7 +43,14 @@
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow text-center">
-            <h3 class="text-sm text-gray-500">Balance Cash</h3>
+            <h3 class="text-sm text-gray-500">Cash Balance</h3>
+            <p class="text-xl font-bold text-orange-600">
+                BD {{ today_cashbalance }}
+            </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow text-center">
+            <h3 class="text-sm text-gray-500">Expected Sales</h3>
             <p class="text-xl font-bold text-blue-600">
                 BD {{ today_balance }}
             </p>
@@ -180,6 +187,50 @@
                     <tr>
                         <td colspan="4" class="py-6 text-center text-gray-500">
                             No purchase entries today
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CASH BALANCE TABLE -->
+    <div class="bg-white rounded-2xl p-6 shadow-md">
+        <h2 class="text-xl font-semibold mb-4 text-orange-600">Cash Balance</h2>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full border-collapse">
+                <thead class="bg-gray-50">
+                    <tr class="text-xs uppercase text-gray-500">
+                        <th class="px-6 py-3 text-center">Time</th>
+                        <th class="px-6 py-3 text-center">Balance Type</th>
+                        <th class="px-6 py-3 text-center">Amount (BD)</th>
+                        <th class="px-6 py-3 text-center">Narration</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y text-sm">
+                    {% for t in today_transactions %}
+                    {% if t.transaction_type == "CASHBALANCE" %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            {{ t.created_on|date:"h:i A" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {{ t.get_cashbalance_category_display }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-semibold text-orange-600 whitespace-nowrap">
+                            BD {{ t.amount|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-600">
+                            {{ t.description|default:"-" }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-6 text-center text-gray-500">
+                            No cash balance entries today
                         </td>
                     </tr>
                     {% endfor %}

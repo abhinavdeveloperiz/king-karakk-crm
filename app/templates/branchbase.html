@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 ,maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}BRANCH PANEL — KING KARAK{% endblock %}</title>
 
     <!-- Tailwind -->
@@ -42,6 +42,19 @@
     <meta name="theme-color" content="#ffffff">
 
 
+    <!-- aos animaton  -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+
+
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+    </style>
 
     <style>
         * {
@@ -105,6 +118,134 @@
 
 </head>
 
+<!-- message sound  -->
+<audio id="toast-success-sound" preload="auto">
+    <source src="{% static 'audio/success.mp3' %}" type="audio/mpeg">
+</audio>
+
+<audio id="toast-error-sound" preload="auto">
+    <source src="{% static 'audio/error.mp3' %}" type="audio/mpeg">
+</audio>
+
+
+{% if messages %}
+<div id="toast-container"
+     class="fixed top-5 right-5 z-50 space-y-4 w-full max-w-sm px-3">
+
+    {% for message in messages %}
+    <div class="toast relative overflow-hidden flex items-start gap-3 p-4 rounded-2xl shadow-2xl backdrop-blur-lg
+        transition-all duration-500 ease-in-out transform translate-x-full opacity-0
+        {% if message.tags == 'error' %}
+            bg-red-50/90 border-l-4 border-red-500
+        {% elif message.tags == 'success' %}
+            bg-green-50/90 border-l-4 border-green-500
+        {% elif message.tags == 'warning' %}
+            bg-yellow-50/90 border-l-4 border-yellow-500
+        {% else %}
+            bg-blue-50/90 border-l-4 border-blue-500
+        {% endif %}
+    "
+    data-tag="{{ message.tags }}">
+
+        <!-- ICON -->
+        <div class="pt-0.5">
+            {% if message.tags == 'error' %}
+            <i data-lucide="x-circle" class="w-5 h-5 text-red-600"></i>
+            {% elif message.tags == 'success' %}
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+            {% elif message.tags == 'warning' %}
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-600"></i>
+            {% else %}
+            <i data-lucide="info" class="w-5 h-5 text-blue-600"></i>
+            {% endif %}
+        </div>
+
+        <!-- MESSAGE -->
+        <div class="flex-1 text-sm font-medium text-gray-800">
+            {{ message }}
+        </div>
+
+        <!-- CLOSE -->
+        <button onclick="closeToast(this)"
+                class="text-gray-400 hover:text-gray-700 transition">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+
+        <!-- TIMER BAR -->
+        <div class="toast-progress absolute bottom-0 left-0 h-[3px]
+            {% if message.tags == 'error' %}
+                bg-red-500
+            {% elif message.tags == 'success' %}
+                bg-green-500
+            {% elif message.tags == 'warning' %}
+                bg-yellow-500
+            {% else %}
+                bg-blue-500
+            {% endif %}
+        "></div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const toasts = document.querySelectorAll(".toast");
+        const successSound = document.getElementById("toast-success-sound");
+        const errorSound = document.getElementById("toast-error-sound");
+
+        toasts.forEach((toast, index) => {
+
+            const progress = toast.querySelector(".toast-progress");
+            const tag = toast.dataset.tag || "";
+
+            /* 🔊 PLAY SOUND WHEN TOAST APPEARS */
+            setTimeout(() => {
+                if (tag.includes("success") && successSound) {
+                    successSound.currentTime = 0;
+                    successSound.play();
+                }
+                if (tag.includes("error") && errorSound) {
+                    errorSound.currentTime = 0;
+                    errorSound.play();
+                }
+            }, 150 * index);
+
+            /* Slide In */
+            setTimeout(() => {
+                toast.classList.remove("translate-x-full", "opacity-0");
+            }, 150 * index);
+
+            /* Progress Bar */
+            progress.style.width = "100%";
+            progress.style.transition = "width 6s linear";
+            setTimeout(() => progress.style.width = "0%", 100);
+
+            /* Auto Close */
+            setTimeout(() => {
+                toast.classList.add("translate-x-full", "opacity-0");
+                setTimeout(() => toast.remove(), 500);
+            }, 6000);
+        });
+
+        lucide.createIcons();
+    });
+
+    function closeToast(btn) {
+        const toast = btn.closest(".toast");
+        toast.classList.add("translate-x-full", "opacity-0");
+        setTimeout(() => toast.remove(), 500);
+    }
+</script>
+
+
+
+
+
+
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900">
 
     <div class="flex h-screen overflow-hidden">
@@ -151,7 +292,7 @@
 
                         <p class="text-xs text-gray-500 uppercase">
                             {% if request.user.is_authenticated and request.user.is_branch %}
-                            {{ request.user.branch_account.location }} 
+                            {{ request.user.branch_account.location }}
                             {% else %}
                             {% endif %}
                         </p>
@@ -179,7 +320,7 @@
                     <div class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center">
                         <i data-lucide="wallet" class="w-4 h-4 text-yellow-600"></i>
                     </div>
-                    <span class="font-medium text-gray-700">E & S Entry</span>
+                    <span class="font-medium text-gray-700">Transactions</span>
                 </a>
 
                 <!-- Profile -->
@@ -320,7 +461,14 @@
         </div>
     </div>
 
-
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+        });
+    </script>
     <!-- JS -->
     <script>
         lucide.createIcons();

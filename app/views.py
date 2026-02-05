@@ -174,9 +174,10 @@ def daily_sales_report(request):
 
         branch_data[branch]["transactions"].append(tx)
 
-        if tx.transaction_type == "SALE":
+        # New logic: sales = purchase + expense + cashbalance
+        if tx.transaction_type in ["PURCHASE", "EXPENSE", "CASHBALANCE"]:
             branch_data[branch]["balance"] += tx.amount
-        else:  # EXPENSE or PURCHASE
+        elif tx.transaction_type == "SALE":
             branch_data[branch]["balance"] -= tx.amount
 
     context = {
@@ -252,6 +253,13 @@ def Admin_cashflow(request):
                     output_field=DecimalField(),
                 )
             ),
+            cashbalance=Sum(
+                Case(
+                    When(transaction_type="CASHBALANCE", then="amount"),
+                    default=Decimal("0.00"),
+                    output_field=DecimalField(),
+                )
+            ),
         )
         .order_by("created_on__date", "branch__name")
     )
@@ -259,7 +267,8 @@ def Admin_cashflow(request):
     grand_total = Decimal("0.00")
 
     for row in summary:
-        net = (row["sales"] or 0) - ((row["expense"] or 0) + (row["purchase"] or 0))
+        # New logic: net_cash = purchase + expense + cashbalance - sales
+        net = ((row["purchase"] or 0) + (row["expense"] or 0) + (row["cashbalance"] or 0)) - (row["sales"] or 0)
         row["net_cash"] = net
         row["net_display"] = abs(net)
         row["is_positive"] = net >= 0
@@ -305,7 +314,10 @@ def branch_add(request):
         form = BranchCreateForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Branch Added successfully")
             return redirect("branch_list") 
+        else:
+            messages.error(request, "Failed to Add")
     else:
         form = BranchCreateForm()
 
@@ -333,8 +345,10 @@ def branch_edit(request, branch_id):
             branch.name = form.cleaned_data["name"]
             branch.location = form.cleaned_data["location"]
             branch.save()
-
+            messages.success(request, f"Branch {branch.name} Updated")
             return redirect("branch_list")
+        else:
+            messages.error(request, "Failed to Update")
 
     else:
         form = BranchEditForm(initial={
@@ -348,12 +362,15 @@ def branch_edit(request, branch_id):
         "branch": branch
     })
 
+
+
 @login_required(login_url="login")
 def branch_delete(request, branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
     user = branch.user
 
     user.delete()   
+    messages.success(request, "Deleted successfully")
     return redirect("branch_list")
 
 
@@ -392,9 +409,12 @@ def branch_detail(request, branch_id):
         transaction_type="PURCHASE"
     ).aggregate(total=Sum("amount"))["total"] or 0
 
-  
+    today_cashbalance = today_transactions.filter(
+        transaction_type="CASHBALANCE"
+    ).aggregate(total=Sum("amount"))["total"] or 0
 
-    today_balance = today_sales - (today_expenses + today_purchases)
+    # New logic: expected_sales = purchase + expense + cashbalance
+    today_balance = today_purchases + today_expenses + today_cashbalance
 
     context = {
         "branch": branch,
@@ -402,6 +422,7 @@ def branch_detail(request, branch_id):
         "today_sales": today_sales,
         "today_expenses": today_expenses,
         "today_purchases": today_purchases,
+        "today_cashbalance": today_cashbalance,
         "today_balance": today_balance,
         "today_date": today,
     }
@@ -473,7 +494,7 @@ def branch_dashboard(request):
 
     today = timezone.localdate()
 
-    total_sales = total_expense = total_purchase = balance_total = Decimal("0.00")
+    total_sales = total_expense = total_purchase = total_cashbalance = balance_total = Decimal("0.00")
     chart_data = {"labels": [], "values": []}
 
     if branch:
@@ -503,20 +524,29 @@ def branch_dashboard(request):
                     output_field=DecimalField()
                 )
             ),
+            total_cashbalance=Sum(
+                Case(
+                    When(transaction_type="CASHBALANCE", then="amount"),
+                    default=Decimal("0.00"),
+                    output_field=DecimalField()
+                )
+            ),
         )
 
         total_sales = totals["total_sales"] or Decimal("0.00")
         total_expense = totals["total_expense"] or Decimal("0.00")
         total_purchase = totals["total_purchase"] or Decimal("0.00")
+        total_cashbalance = totals["total_cashbalance"] or Decimal("0.00")
 
-        balance_total = total_sales - total_expense - total_purchase
+        # New logic: sales_of_day = purchase + expense + cashbalance
+        balance_total = total_purchase + total_expense + total_cashbalance
 
         chart_data = {
-            "labels": ["Sales", "Expenses", "Purchase"],
+            "labels": ["Purchase", "Expenses", "Cash Balance"],
             "values": [
-                float(total_sales),
-                float(total_expense),
                 float(total_purchase),
+                float(total_expense),
+                float(total_cashbalance),
             ],
         }
 
@@ -526,6 +556,7 @@ def branch_dashboard(request):
         "total_sales": total_sales,
         "total_expense": total_expense,
         "total_purchase": total_purchase,
+        "total_cashbalance": total_cashbalance,
         "balance_total": balance_total,
         "chart_data_json": json.dumps(chart_data),
     }
@@ -568,15 +599,10 @@ def branch_expense_sales_list(request):
     sales_transactions = transactions.filter(transaction_type="SALE")
     expense_transactions = transactions.filter(transaction_type="EXPENSE")
     purchase_transactions = transactions.filter(transaction_type="PURCHASE")
+    cashbalance_transactions = transactions.filter(transaction_type="CASHBALANCE")
 
     totals = transactions.aggregate(
-        total_sales=Sum(
-            Case(
-                When(transaction_type="SALE", then="amount"),
-                default=Decimal("0.00"),
-                output_field=DecimalField()
-            )
-        ),
+     
         total_expense=Sum(
             Case(
                 When(transaction_type="EXPENSE", then="amount"),
@@ -591,13 +617,21 @@ def branch_expense_sales_list(request):
                 output_field=DecimalField()
             )
         ),
+        total_cashbalance=Sum(
+            Case(
+                When(transaction_type="CASHBALANCE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
     )
 
-    total_sales = totals["total_sales"] or Decimal("0.00")
     total_expense = totals["total_expense"] or Decimal("0.00")
     total_purchase = totals["total_purchase"] or Decimal("0.00")
+    total_cashbalance = totals["total_cashbalance"] or Decimal("0.00")
 
-    balance_total = total_sales - total_expense - total_purchase
+    # New logic: sales_of_day = purchase + expense + cashbalance
+    balance_total = total_purchase + total_expense + total_cashbalance
 
     context = {
         "branch": branch,
@@ -606,9 +640,10 @@ def branch_expense_sales_list(request):
         "sales_transactions": sales_transactions,
         "expense_transactions": expense_transactions,
         "purchase_transactions": purchase_transactions,
-        "total_sales": total_sales,
+        "cashbalance_transactions": cashbalance_transactions,
         "total_expense": total_expense,
         "total_purchase": total_purchase,
+        "total_cashbalance": total_cashbalance,
         "balance_total": balance_total,
     }
 
@@ -657,9 +692,9 @@ def branch_profile(request):
         .filter(branch=branch)
         .only(
             "transaction_type",
-            "sales_category",
             "purchase_category",
             "expense_category",
+            "cashbalance_category",
             "amount",
             "created_on",
         )

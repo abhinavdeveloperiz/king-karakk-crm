@@ -1,159 +1,172 @@
 {% extends "branchbase.html" %}
+{% load static %}
 {% block content %}
 
-<div class="max-w-3xl mx-auto py-10">
+<div class="max-w-4xl mx-auto px-4">
 
-    <!-- Page Header -->
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+
+
+        <a href="javascript:history.back()"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-300 gradient-primary hover:opacity-80 text-white transition text-sm font-medium w-24">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back
+        </a>
+
+
+        <div class="flex items-center gap-3 uppercase">
+            <div class="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow">
                 <i data-lucide="file-plus" class="w-6 h-6 text-white"></i>
             </div>
-            Add Transaction
-        </h1>
+            <div>
+                <h1 class="text-xl font-bold text-gray-900">Add Transaction</h1>
+                <p class="text-sm text-gray-500">Record Cash, expenses and purchases</p>
+            </div>
+        </div>
 
-        <a href="{% url 'branch_expense_sales_list' %}"
-           class="px-4 py-2 border border-gray-300 rounded-xl gradient-primary text-white transition flex items-center gap-2 text-sm font-medium">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Back to List
-        </a>
+
+
     </div>
 
-    <!-- Form Card -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+    <!-- Card -->
+    <audio id="saveSound" preload="auto">
+        <source src="{% static 'audio/success.mp3' %}" type="audio/mpeg">
+    </audio>
 
-        <form method="POST">
+    <div class="bg-white/90 backdrop-blur rounded-3xl shadow-xl border p-6 sm:p-10">
+
+        <form method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-6" onsubmit="playSaveSound()">
             {% csrf_token %}
 
             <!-- Transaction Type -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Transaction Type
                 </label>
                 {{ form.transaction_type }}
                 {% if form.transaction_type.errors %}
-                    <p class="text-red-500 text-sm mt-1">
-                        {{ form.transaction_type.errors.0 }}
-                    </p>
+                <p class="text-red-500 text-xs mt-1">{{ form.transaction_type.errors.0 }}</p>
                 {% endif %}
             </div>
 
             <!-- Date -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Date
                 </label>
                 {{ form.created_on }}
                 {% if form.created_on.errors %}
-                    <p class="text-red-500 text-sm mt-1">
-                        {{ form.created_on.errors.0 }}
-                    </p>
-                {% endif %}
-            </div>
-
-            <!-- Sales Category -->
-            <div id="sales-category" class="mb-4 hidden">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Sales Reason
-                </label>
-                {{ form.sales_category }}
-                {% if form.sales_category.errors %}
-                    <p class="text-red-500 text-sm mt-1">
-                        {{ form.sales_category.errors.0 }}
-                    </p>
+                <p class="text-red-500 text-xs mt-1">{{ form.created_on.errors.0 }}</p>
                 {% endif %}
             </div>
 
             <!-- Purchase Category -->
-            <div id="purchase-category" class="mb-4 hidden">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+            <div id="purchase-category" class="hidden transition-all duration-300">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Purchase Reason
                 </label>
                 {{ form.purchase_category }}
                 {% if form.purchase_category.errors %}
-                    <p class="text-red-500 text-sm mt-1">
-                        {{ form.purchase_category.errors.0 }}
-                    </p>
+                <p class="text-red-500 text-xs mt-1">{{ form.purchase_category.errors.0 }}</p>
                 {% endif %}
             </div>
 
             <!-- Expense Category -->
-            <div id="expense-category" class="mb-4 hidden">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+            <div id="expense-category" class="hidden transition-all duration-300">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Expense Reason
                 </label>
                 {{ form.expense_category }}
                 {% if form.expense_category.errors %}
-                    <p class="text-red-500 text-sm mt-1">
-                        {{ form.expense_category.errors.0 }}
-                    </p>
+                <p class="text-red-500 text-xs mt-1">{{ form.expense_category.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Cash Balance Category -->
+            <div id="cashbalance-category" class="hidden transition-all duration-300">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Cash Balance Type
+                </label>
+                {{ form.cashbalance_category }}
+                {% if form.cashbalance_category.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.cashbalance_category.errors.0 }}</p>
                 {% endif %}
             </div>
 
             <!-- Amount -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Amount (BD)
                 </label>
                 {{ form.amount }}
                 {% if form.amount.errors %}
-                    <p class="text-red-500 text-sm mt-1">
-                        {{ form.amount.errors.0 }}
-                    </p>
+                <p class="text-red-500 text-xs mt-1">{{ form.amount.errors.0 }}</p>
                 {% endif %}
             </div>
 
             <!-- Description -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Narration
                 </label>
                 {{ form.description }}
                 {% if form.description.errors %}
-                    <p class="text-red-500 text-sm mt-1">
-                        {{ form.description.errors.0 }}
-                    </p>
+                <p class="text-red-500 text-xs mt-1">{{ form.description.errors.0 }}</p>
                 {% endif %}
             </div>
 
-            <!-- Submit Button -->
-            <button
-                type="submit"
-                class="w-full py-3 gradient-primary text-white font-semibold rounded-xl shadow hover:shadow-lg transition">
-                Save Entry
-            </button>
+            <!-- Submit -->
+            <div class="sm:col-span-2">
+                <button type="submit"
+                    class="w-full py-3 rounded-xl gradient-primary text-white font-bold tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.01] transition">
+                    Save Transaction
+                </button>
+            </div>
 
         </form>
     </div>
 
 </div>
 
+
+<!-- play sound -->
+ <script>
+    function playSaveSound() {
+        const sound = document.getElementById("saveSound");
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play();
+        }
+    }
+</script>
+
 <script>
     lucide.createIcons();
 
     const transactionType = document.getElementById("id_transaction_type");
-    const salesDiv = document.getElementById("sales-category");
     const purchaseDiv = document.getElementById("purchase-category");
     const expenseDiv = document.getElementById("expense-category");
+    const cashbalanceDiv = document.getElementById("cashbalance-category");
 
     function toggleCategories() {
         const value = transactionType.value;
 
-        salesDiv.classList.add("hidden");
         purchaseDiv.classList.add("hidden");
         expenseDiv.classList.add("hidden");
+        cashbalanceDiv.classList.add("hidden");
 
-        if (value === "SALE") {
-            salesDiv.classList.remove("hidden");
-        } else if (value === "PURCHASE") {
+        if (value === "PURCHASE") {
             purchaseDiv.classList.remove("hidden");
         } else if (value === "EXPENSE") {
             expenseDiv.classList.remove("hidden");
+        } else if (value === "CASHBALANCE") {
+            cashbalanceDiv.classList.remove("hidden");
         }
     }
 
     transactionType.addEventListener("change", toggleCategories);
-    toggleCategories(); // on page load (important for validation errors)
+    toggleCategories();
 </script>
 
 {% endblock %}

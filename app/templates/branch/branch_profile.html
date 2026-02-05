@@ -5,10 +5,18 @@
 
 {% block content %}
 
-<div class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-8">
+<div class="max-w-7xl mx-auto px-4 lg:px-8 py- space-y-8">
 
     <!-- HEADER -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between ">
+
+
+        <a href="javascript:history.back()"
+            class="inline-flex items-center px-4 py-2 rounded-xl border border-gray-300 gradient-primary hover:opacity-80 text-white transition text-sm font-medium w-24 mb-10">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back
+        </a>
+        
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 uppercase">
             <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <i data-lucide="store" class="w-6 h-6 text-white"></i>
@@ -16,17 +24,13 @@
             {{ branch.name }} – Profile
         </h1>
 
-        <a href="{% url 'branch_dashboard' %}"
-            class="px-4 py-2 gradient-primary text-white rounded-xl hover:opacity-90 transition flex items-center gap-2 text-sm font-medium">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            Dashboard
-        </a>
+        
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- PROFILE CARD -->
-        <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 flex flex-col items-center text-center">
+        <div class="h-[45vh] md:h-[30vh] lg:h-[50vh] bg-white rounded-3xl shadow-xl p-8 border border-gray-100 flex flex-col items-center text-center" data-aos="fade-right">
 
             <!-- Logo -->
             <div class="relative mb-6">
@@ -54,11 +58,9 @@
         <!-- RIGHT COLUMN -->
         <div class="lg:col-span-2 space-y-6">
 
-    
-
 
             <!-- QUICK ACTIONS -->
-            <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+            <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100" data-aos="fade-down">
                 <h3 class="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h3>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -72,14 +74,14 @@
 
                     <!-- Add Entry -->
                     <a href="{% url 'branch_expense_sales_add' %}"
-                        class="group flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl hover:scale-105 transition shadow-lg">
+                        class="group flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl hover:scale-105 transition shadow-lg">
                         <i data-lucide="plus-circle" class="w-7 h-7 text-white"></i>
                         <span class="text-sm font-bold text-white">Add Entry</span>
                     </a>
 
                     <!-- Transactions -->
                     <a href="{% url 'branch_expense_sales_list' %}"
-                        class="group flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl hover:scale-105 transition shadow-lg">
+                        class="group flex flex-col items-center gap-3 p-6 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl hover:scale-105 transition shadow-lg">
                         <i data-lucide="list" class="w-7 h-7 text-white"></i>
                         <span class="text-sm font-bold text-white">Transactions</span>
                     </a>
@@ -89,13 +91,13 @@
 
 
             <!-- RECENT ACTIVITY -->
-            <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+            <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100" >
                 <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
                     <i data-lucide="activity" class="w-5 h-5 text-purple-600"></i>
                     Recent Activity
                 </h3>
 
-                <ul class="space-y-3 text-sm">
+                <ul class="space-y-3 text-sm ">
                     {% for t in recent_transactions %}
                     <li class="flex justify-between">
                         <span class="text-gray-700">

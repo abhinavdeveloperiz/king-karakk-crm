@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from decimal import Decimal
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -31,11 +30,13 @@ class SalesCategory(models.Model):
     def __str__(self):
         return self.name
 
+
 class PurchaseCategory(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
+
 
 class ExpenseCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -43,18 +44,14 @@ class ExpenseCategory(models.Model):
     def __str__(self):
         return self.name
 
+class CashBalanceCategory(models.Model):
+    name = models.CharField(max_length=100)
 
+    def __str__(self):
+        return self.name
 
 
 class Transaction(models.Model):
-
-    SALES_CATEGORY_CHOICES = (
-        ("ONLINE", "Online Sales"),
-        ("OFFLINE", "Offline Sales"),
-        ("WHOLESALE", "Wholesale"),
-        ('OTHER', 'Other'),
-    )
-
     PURCHASE_CATEGORY_CHOICES = (
         ("RAW", "Raw Material"),
         ("ASSET", "Asset Purchase"),
@@ -70,11 +67,17 @@ class Transaction(models.Model):
         ('OTHER', 'Other'),
     )
 
+    CASHBALANCE_CATEGORY_CHOICES = (
+        ("OPENING", "Opening Balance"),
+        ("CLOSING", "Closing Balance"),
+        ('OTHER', 'Other'),
+    )
 
     TRANSACTION_TYPE_CHOICES = (
         ("SALE", "Sales"),
         ("PURCHASE", "Purchase"),
         ("EXPENSE", "Expense"),
+        ("CASHBALANCE", "Cash Balance"),
     )
 
 
@@ -82,16 +85,18 @@ class Transaction(models.Model):
         Branch, on_delete=models.CASCADE, related_name="transactions"
     )
 
-    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES
+    transaction_type = models.CharField(max_length=12, choices=TRANSACTION_TYPE_CHOICES
     )
 
-    sales_category = models.CharField(max_length=30,choices=SALES_CATEGORY_CHOICES,null=True,blank=True
-    )
+   
 
     purchase_category = models.CharField(max_length=30, choices=PURCHASE_CATEGORY_CHOICES,null=True,blank=True
     )
 
     expense_category = models.CharField(max_length=30, choices=EXPENSE_CATEGORY_CHOICES,null=True,blank=True
+    )
+
+    cashbalance_category = models.CharField(max_length=30, choices=CASHBALANCE_CATEGORY_CHOICES,null=True,blank=True
     )
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)

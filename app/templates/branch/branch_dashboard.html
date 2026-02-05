@@ -1,12 +1,14 @@
 {% extends "branchbase.html" %}
 {% load static %}
+{% load humanize %}
+
 {% block title %}Branch Dashboard{% endblock %}
 
 {% block content %}
 
 <!-- Page Header -->
-<div
-    class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 p-8 shadow-2xl mb-8">
+<div data-aos="fade-down" data-aos-delay="1000"
+    class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-purple-500 to-indigo-600 p-4 shadow-2xl mb-8">
     <div class="absolute inset-0 bg-grid-white/10"></div>
 
     <div class="relative z-10 flex items-center gap-4 mb-2">
@@ -27,51 +29,56 @@
 </div>
 
 <!-- Stats Cards -->
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
-    <!-- Sales -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 rounded-3xl shadow-xl p-6">
-        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
-            <i data-lucide="arrow-up-right" class="w-6 h-6 text-white"></i>
-        </div>
-        <p class="text-white/90 text-sm font-medium mb-1">Today Sales</p>
-        <h2 class="text-3xl font-bold text-white">
-            BD {{ total_sales|floatformat:2 }}
-        </h2>
-    </div>
+<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
     <!-- Expenses -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600 rounded-3xl shadow-xl p-6">
-        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
+    <a href="{% url 'branch_expense_sales_list' %}" data-aos="fade-down" data-aos-delay="0"
+        class="relative overflow-hidden bg-red-500 rounded-3xl shadow-xl p-6">
+        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2 hidden sm:block">
             <i data-lucide="arrow-down-right" class="w-6 h-6 text-white"></i>
         </div>
         <p class="text-white/90 text-sm font-medium mb-1">Today Expenses</p>
         <h2 class="text-3xl font-bold text-white">
-            BD {{ total_expense|floatformat:2 }}
+            BD {{ total_expense|floatformat:2|intcomma }}
         </h2>
-    </div>
+    </a>
 
     <!-- Purchase -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl shadow-xl p-6">
-        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
+    <a href="{% url 'branch_expense_sales_list' %}" data-aos="fade-down" data-aos-delay="200"
+        class="relative overflow-hidden bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl shadow-xl p-6">
+        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2 hidden sm:block">
             <i data-lucide="shopping-cart" class="w-6 h-6 text-white"></i>
         </div>
         <p class="text-white/90 text-sm font-medium mb-1">Today Purchase</p>
         <h2 class="text-3xl font-bold text-white">
-            BD {{ total_purchase|floatformat:2 }}
+            BD {{ total_purchase|floatformat:2|intcomma }}
         </h2>
-    </div>
+    </a>
 
-    <!-- Balance -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl shadow-xl p-6">
-        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2">
+    <!-- Cash Balance -->
+    <a href="{% url 'branch_expense_sales_list' %}" data-aos="fade-down" data-aos-delay="400"
+        class="relative overflow-hidden bg-blue-600 rounded-3xl shadow-xl p-6">
+        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2 hidden sm:block">
             <i data-lucide="wallet" class="w-6 h-6 text-white"></i>
         </div>
-        <p class="text-white/90 text-sm font-medium mb-1">Balance Cash</p>
+        <p class="text-white/90 text-sm font-medium mb-1">Cash Balance</p>
         <h2 class="text-3xl font-bold text-white">
-            BD {{ balance_total|floatformat:2 }}
+            BD {{ total_cashbalance|floatformat:2|intcomma }}
         </h2>
-    </div>
+    </a>
+
+    <!-- Total Sales (Calculated) -->
+    <a href="{% url 'branch_expense_sales_list' %}" data-aos="fade-down" data-aos-delay="600"
+        class="relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 rounded-3xl shadow-xl p-6">
+        <div class="absolute top-4 right-4 bg-white/20 rounded-xl p-2 hidden sm:block">
+            <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+        </div>
+        <p class="text-white/90 text-sm font-medium mb-1">Total Sales</p>
+        <h2 class="text-3xl font-bold text-white">
+            BD {{ balance_total|floatformat:2|intcomma }}
+        </h2>
+        <p class="text-white/75 text-xs mt-2 hidden sm:block">Purchase + Expense + Cash</p>
+    </a>
 
 </div>
 
@@ -79,8 +86,8 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
 
     <!-- Chart -->
-    <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6">
-        <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3 mb-6">
+    <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 hover:scale-[1.02] transition-all">
+        <h2 class="text-xl font-bold text-gray-900 flex items-center gap-3 mb-6">
             <i data-lucide="pie-chart" class="w-5 h-5 text-purple-600"></i>
             Transaction Overview ({{ today }})
         </h2>
@@ -93,10 +100,10 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="space-y-4">
+    <div class="space-y-4 ">
 
         <a href="{% url 'branch_expense_sales_add' %}"
-            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 hover:scale-105">
+            class="block group bg-white shadow-xl hover:shadow-2xl border border-gray-100 hover:scale-[1.02] transition-all">
             <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 flex items-start gap-4">
                 <div
                     class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
@@ -104,15 +111,32 @@
                 </div>
                 <div class="flex-1">
                     <h3 class="text-lg font-bold text-gray-900 mb-1">Add Transaction</h3>
-                    <p class="text-gray-600 text-sm">Sales / Expense / Purchase</p>
+                    <p class="text-gray-600 text-sm">Cash / Expense / Purchase</p>
                 </div>
                 <i data-lucide="arrow-right"
                     class="w-5 h-5 text-purple-600 group-hover:translate-x-1 transition-transform"></i>
             </div>
         </a>
 
+        <a href="{% url 'branch_expense_sales_list' %}"
+            class="block group bg-white shadow-xl hover:shadow-2xl border border-gray-100 hover:scale-[1.02] transition-all">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 flex items-start gap-4">
+                <div
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <i data-lucide="list" class="w-7 h-7 text-white"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">View Transactions</h3>
+                    <p class="text-gray-600 text-sm">See all cash, expense & purchase entries</p>
+                </div>
+                <i data-lucide="arrow-right"
+                    class="w-5 h-5 text-green-600 group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </a>
+
+
         <a href="{% url 'branch_profile' %}"
-            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 hover:scale-105">
+            class="block group bg-white shadow-xl hover:shadow-2xl border border-gray-100 hover:scale-[1.02] transition-all">
             <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 flex items-start gap-4">
                 <div
                     class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
@@ -128,7 +152,7 @@
         </a>
 
         <a href="{% url 'logout' %}"
-            class="block group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all border border-gray-100 hover:scale-105">
+            class="block group bg-white shadow-xl hover:shadow-2xl border border-gray-100 hover:scale-[1.02] transition-all">
             <div class="bg-gradient-to-br from-red-50 to-red-100 p-6 flex items-start gap-4">
                 <div
                     class="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
@@ -157,9 +181,9 @@
             datasets: [{
                 data: chartData.values,
                 backgroundColor: [
-                    '#22C55E', // Sales
+                    '#A855F7', // Purchase
                     '#EF4444', // Expense
-                    '#A855F7'  // Purchase
+                    '#3B82F6', // Cash Balance
                 ],
                 borderColor: '#ffffff',
                 borderWidth: 2
@@ -177,5 +201,6 @@
 
     lucide.createIcons();
 </script>
+
 
 {% endblock %}

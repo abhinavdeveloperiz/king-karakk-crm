@@ -39,7 +39,7 @@ urlpatterns = [
 
     # ================== BRANCH  ==================
 
-    path('branch/', views.branch_dashboard, name='branch_dashboard'),
+    path('branch/', views.branch_dashboard, name='branch_dashboard'), 
     path('branch/expense-entry/list/', views.branch_expense_sales_list, name='branch_expense_sales_list'),
     path('branch/expense-entry/add/', views.branch_expense_sales_entry, name='branch_expense_sales_add'),
     path('branch/profile/', views.branch_profile, name='branch_profile'),
