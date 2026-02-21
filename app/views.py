@@ -1,10 +1,8 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .forms import BranchCreateForm,BranchEditForm
-from .models import Branch,User,Transaction
+from .forms import BranchCreateForm,BranchEditForm,AdminBranchTransactionCreateForm, BranchTransactionCreateForm
+from .models import Branch,User,Transaction, Branch
 from django.contrib.auth import update_session_auth_hash
 
-# branch forms 
-from .forms import BranchTransactionCreateForm
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login,logout
@@ -17,15 +15,16 @@ from django.db.models.functions import TruncDate
 from decimal import Decimal
 
 from django.core.paginator import Paginator
+from django.db.models import Q
 
-
+from datetime import date,datetime, time
+import calendar
 
 
 from collections import defaultdict
 from django.utils import timezone
 from django.utils.timezone import now
 import json
-from datetime import datetime, time
 
 
 
@@ -51,7 +50,7 @@ def admin_and_branch_login(request):
 
         if user is None:
             messages.error(request, "Invalid username or password.")
-            return redirect("login")   # IMPORTANT: redirect, not render
+            return redirect("login")   
 
         if not (user.is_superuser or getattr(user, "is_branch", False)):
             messages.error(request, "You are not allowed to login here.")
@@ -131,7 +130,61 @@ def admin_and_branch_logout(request):
 
 @login_required(login_url="login")
 def admin_profile(request):
-    return render(request, 'owner/admin_profile.html')
+    current_year = now().year
+
+    total_branches = Branch.objects.count()
+    transactions = Transaction.objects.filter(created_on__year=current_year)
+
+
+    # this year transaction 
+    totals = transactions.aggregate(
+        total_purchase=Sum('amount', filter=Q(transaction_type='PURCHASE')),
+        total_expense=Sum('amount', filter=Q(transaction_type='EXPENSE')),
+        total_cashbalance=Sum('amount', filter=Q(transaction_type='CASHBALANCE')),
+    )
+
+    total_purchase = totals['total_purchase'] or Decimal('0')
+    total_expense = totals['total_expense'] or Decimal('0')
+    total_cashbalance = totals['total_cashbalance'] or Decimal('0')
+
+    total_sales = total_purchase + total_expense + total_cashbalance
+
+
+    # today transactions
+    today = timezone.localdate()
+    today_transactions = Transaction.objects.filter(created_on__date=today)
+
+    today_totals = today_transactions.aggregate(
+        today_purchase=Sum('amount', filter=Q(transaction_type='PURCHASE')),
+        today_expense=Sum('amount', filter=Q(transaction_type='EXPENSE')),
+        today_cashbalance=Sum('amount', filter=Q(transaction_type='CASHBALANCE')),
+    )
+
+    today_purchase = today_totals['today_purchase'] or Decimal('0')
+    today_expense = today_totals['today_expense'] or Decimal('0')
+    today_cashbalance = today_totals['today_cashbalance'] or Decimal('0')
+
+    today_total_sales = today_purchase + today_expense + today_cashbalance
+
+
+    context = {
+        'year': current_year,
+        'total_purchase': total_purchase,
+        'total_expense': total_expense,
+        'total_cashbalance': total_cashbalance,
+        'total_sales': total_sales,
+        'total_branches': total_branches,
+        'today_purchase': today_purchase,
+        'today_expense': today_expense,
+        'today_cashbalance': today_cashbalance,
+        'today_total_sales': today_total_sales,
+    }
+
+    return render(request, 'owner/admin_profile.html', context)
+
+
+
+
 
 @login_required(login_url="login")
 def admin_dashboard(request):
@@ -142,17 +195,22 @@ def admin_dashboard(request):
 
 
 
-
-
-
-
-
 @login_required(login_url="login")
 def daily_sales_report(request):
     today = timezone.localdate()
 
-    start_of_day = timezone.make_aware(datetime.combine(today, time.min))
-    end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+    selected_date_str = request.GET.get("date")
+    if selected_date_str:
+        try:
+            from datetime import datetime as dt
+            selected_date = dt.strptime(selected_date_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            selected_date = today
+    else:
+        selected_date = today
+
+    start_of_day = timezone.make_aware(datetime.combine(selected_date, time.min))
+    end_of_day = timezone.make_aware(datetime.combine(selected_date, time.max))
 
     transactions = (
         Transaction.objects
@@ -181,7 +239,7 @@ def daily_sales_report(request):
             branch_data[branch]["balance"] -= tx.amount
 
     context = {
-        "today": today,
+        "today": selected_date,
         "branch_data": branch_data,
     }
 
@@ -191,26 +249,11 @@ def daily_sales_report(request):
 
 
 
-
-
-
-
-
-
-from django.db.models import Sum, Case, When, DecimalField
-from decimal import Decimal
-from datetime import date
-import calendar
-
-from .models import Transaction, Branch
-
-
 @login_required(login_url="login")
 def Admin_cashflow(request):
 
-    # ---------------- FILTERS ----------------
     branch_id = request.GET.get("branch", "all")
-    month = request.GET.get("month")  # YYYY-MM
+    month = request.GET.get("month") 
 
     qs = Transaction.objects.select_related("branch")
 
@@ -218,7 +261,7 @@ def Admin_cashflow(request):
     if branch_id != "all":
         qs = qs.filter(branch_id=branch_id)
 
-    # Month filter (SAFE DATE RANGE FILTER)
+
     if month:
         year, mon = map(int, month.split("-"))
 
@@ -228,7 +271,7 @@ def Admin_cashflow(request):
 
         qs = qs.filter(created_on__date__range=(start_date, end_date))
 
-    # ---------------- SUMMARY TABLE ----------------
+
     summary = (
         qs.values("created_on__date", "branch__name")
         .annotate(
@@ -385,46 +428,83 @@ def branch_detail(request, branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
 
     today = timezone.localdate()
+    
+    # Get selected date from request, default to today
+    selected_date_str = request.GET.get("date")
+    if selected_date_str:
+        try:
+            from datetime import datetime as dt
+            selected_date = dt.strptime(selected_date_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            selected_date = today
+    else:
+        selected_date = today
 
-    start_of_day = timezone.make_aware(datetime.combine(today, time.min))
-    end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+    start_of_day = timezone.make_aware(datetime.combine(selected_date, time.min))
+    end_of_day = timezone.make_aware(datetime.combine(selected_date, time.max))
    
-    today_transactions = Transaction.objects.filter(
+    transactions = Transaction.objects.filter(
         branch=branch,
         created_on__gte=start_of_day, created_on__lte=end_of_day
     ).order_by("-created_on")
 
-   
+    sales_transactions = transactions.filter(transaction_type="SALE")
+    expense_transactions = transactions.filter(transaction_type="EXPENSE")
+    purchase_transactions = transactions.filter(transaction_type="PURCHASE")
+    cashbalance_transactions = transactions.filter(transaction_type="CASHBALANCE")
 
+    totals = transactions.aggregate(
+        total_sales=Sum(
+            Case(
+                When(transaction_type="SALE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
+        total_expense=Sum(
+            Case(
+                When(transaction_type="EXPENSE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
+        total_purchase=Sum(
+            Case(
+                When(transaction_type="PURCHASE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
+        total_cashbalance=Sum(
+            Case(
+                When(transaction_type="CASHBALANCE", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
+    )
 
-    today_sales = today_transactions.filter(
-        transaction_type="SALE"
-    ).aggregate(total=Sum("amount"))["total"] or 0
-
-    today_expenses = today_transactions.filter(
-        transaction_type="EXPENSE"
-    ).aggregate(total=Sum("amount"))["total"] or 0
-
-    today_purchases = today_transactions.filter(
-        transaction_type="PURCHASE"
-    ).aggregate(total=Sum("amount"))["total"] or 0
-
-    today_cashbalance = today_transactions.filter(
-        transaction_type="CASHBALANCE"
-    ).aggregate(total=Sum("amount"))["total"] or 0
+    total_sales = totals["total_sales"] or Decimal("0.00")
+    total_expense = totals["total_expense"] or Decimal("0.00")
+    total_purchase = totals["total_purchase"] or Decimal("0.00")
+    total_cashbalance = totals["total_cashbalance"] or Decimal("0.00")
 
     # New logic: expected_sales = purchase + expense + cashbalance
-    today_balance = today_purchases + today_expenses + today_cashbalance
+    balance_total = total_purchase + total_expense + total_cashbalance
 
     context = {
         "branch": branch,
-        "today_transactions": today_transactions,
-        "today_sales": today_sales,
-        "today_expenses": today_expenses,
-        "today_purchases": today_purchases,
-        "today_cashbalance": today_cashbalance,
-        "today_balance": today_balance,
-        "today_date": today,
+        "today": today,
+        "selected_date": selected_date,
+        "sales_transactions": sales_transactions,
+        "expense_transactions": expense_transactions,
+        "purchase_transactions": purchase_transactions,
+        "cashbalance_transactions": cashbalance_transactions,
+        "total_sales": total_sales,
+        "total_expense": total_expense,
+        "total_purchase": total_purchase,
+        "total_cashbalance": total_cashbalance,
+        "balance_total": balance_total,
     }
 
     return render(request, "owner/admin_branch_detail.html", context)
@@ -442,7 +522,7 @@ def admin_add_transaction_to_branch(request, branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
 
     if request.method == "POST":
-        form = BranchTransactionCreateForm(request.POST)
+        form = AdminBranchTransactionCreateForm(request.POST)
         if form.is_valid():
             transaction = form.save(commit=False)
             transaction.branch = branch
@@ -453,7 +533,7 @@ def admin_add_transaction_to_branch(request, branch_id):
             messages.success(request, f"Transaction added successfully to {branch.name}.")
             return redirect("branch_detail", branch_id=branch_id)
     else:
-        form = BranchTransactionCreateForm()
+        form = AdminBranchTransactionCreateForm()
 
     return render(
         request,
@@ -464,17 +544,6 @@ def admin_add_transaction_to_branch(request, branch_id):
 
 
 
-
-
-def branch_financial_overview(request):
-    return render(request, 'owner/branch_financial_overview.html')
-
-def business_overview(request):
-    return render(request, 'owner/business_overview.html')
-
-
-
-# --------------------------------------------------------------------------- 
 
 
 

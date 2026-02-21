@@ -173,8 +173,7 @@
 
 
 {% if messages %}
-<div id="toast-container"
-     class="fixed top-5 right-5 z-50 space-y-4 w-full max-w-sm px-3">
+<div id="toast-container" class="fixed top-5 right-5 z-50 space-y-4 w-full max-w-sm px-3">
 
     {% for message in messages %}
     <div class="toast relative overflow-hidden flex items-start gap-3 p-4 rounded-2xl shadow-2xl backdrop-blur-lg
@@ -188,8 +187,7 @@
         {% else %}
             bg-blue-50/90 border-l-4 border-blue-500
         {% endif %}
-    "
-    data-tag="{{ message.tags }}">
+    " data-tag="{{ message.tags }}">
 
         <!-- ICON -->
         <div class="pt-0.5">
@@ -210,8 +208,7 @@
         </div>
 
         <!-- CLOSE -->
-        <button onclick="closeToast(this)"
-                class="text-gray-400 hover:text-gray-700 transition">
+        <button onclick="closeToast(this)" class="text-gray-400 hover:text-gray-700 transition">
             <i data-lucide="x" class="w-4 h-4"></i>
         </button>
 
@@ -345,34 +342,18 @@
                     <span class="link-text font-medium text-gray-700 group-hover:text-gray-900">Dashboard</span>
                 </a>
 
-                <!-- Branch Dropdown -->
-                <div class="dropdown">
-                    <button
-                        class="nav-link flex items-center gap-3 px-4 py-3 w-full hover:bg-gray-50 rounded-xl transition group">
-                        <div
-                            class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 group-hover:bg-purple-100 transition">
-                            <i data-lucide="git-branch" class="w-4 h-4 text-purple-600"></i>
-                        </div>
-                        <span
-                            class="link-text flex-1 text-left font-medium text-gray-700 group-hover:text-gray-900">Branches</span>
-                        <i data-lucide="chevron-down" class="chevron w-4 h-4 text-gray-400"></i>
-                    </button>
 
-                    <div class="dropdown-content ml-12 space-y-1 mt-1">
-                        <a href="{% url 'branch_list' %}"
-                            class="block py-2 px-4 hover:bg-purple-50 text-sm text-gray-600 hover:text-purple-600 rounded-lg transition">
-                            All Branches
-                        </a>
-                        <a href="{% url 'branch_add' %}"
-                            class="block py-2 px-4 hover:bg-purple-50 text-sm text-gray-600 hover:text-purple-600 rounded-lg transition">
-                            Add Branch
-                        </a>
-                        <!-- <a href="/admin/business-overview/"
-                            class="block py-2 px-4 hover:bg-purple-50 text-sm text-gray-600 hover:text-purple-600 rounded-lg transition">
-                            Business Overview
-                        </a> -->
+                <a href="{% url 'branch_list' %}"
+                    class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition group">
+                    <div
+                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 group-hover:bg-purple-100 transition">
+                        <i data-lucide="git-branch" class="w-4 h-4 text-purple-600"></i>
                     </div>
-                </div>
+                    <span class="link-text font-medium text-gray-700 group-hover:text-gray-900">Branches</span>
+                </a>
+
+
+
 
                 <!-- ⭐ Daily Report Tab -->
                 <a href="{% url 'daily_sales_report' %}"

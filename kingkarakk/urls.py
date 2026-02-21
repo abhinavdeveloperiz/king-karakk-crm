@@ -9,7 +9,6 @@ urlpatterns = [
     path('category/', admin.site.urls),
 
 
-    # ================== ADMIN  ==================
     path('branch/admin/login/', views.admin_and_branch_login, name='login'),
     path("change-credentials/", views.change_superadmin_credentials, name="change_credentials"),
     path('branch/admin/logout/', views.admin_and_branch_logout, name='logout'),
@@ -31,9 +30,6 @@ urlpatterns = [
     path('admin/branch/<int:branch_id>/add-transaction/', views.admin_add_transaction_to_branch, name='admin_add_transaction_to_branch'),
 
     path('admin/branch/<int:branch_id>/delete/', views.branch_delete, name='branch_delete'),
-
-    path('admin/branch/financial-overview/', views.branch_financial_overview, name='branch_financial_overview'),
-    path('admin/business-overview/', views.business_overview, name='business_overview'),
 
 
 

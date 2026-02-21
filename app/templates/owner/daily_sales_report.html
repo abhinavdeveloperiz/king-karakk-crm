@@ -4,10 +4,18 @@
 <div class="space-y-10">
 
     <!-- HEADER -->
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">
             Daily Branch Report – {{ today|date:"M d, Y" }}
         </h1>
+
+        <div
+            class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow border border-gray-200 w-full sm:w-auto">
+            <i data-lucide="calendar" class="w-4 h-4 text-gray-600"></i>
+            <input type="date" id="dateFilter" value="{{ today|date:'Y-m-d' }}"
+                class="border-none outline-none text-sm font-medium text-gray-700 w-full"
+                onchange="filterByDate(this.value)">
+        </div>
     </div>
 
     {% for branch, data in branch_data.items %}
@@ -79,7 +87,7 @@
         <div class="pt-4 border-t">
             <div class="flex items-center justify-between">
                 <span class="text-base font-semibold text-gray-700">
-                    Expected Sales (Purchase + Expense + CashBalance):
+                    Total Sales:
                 </span>
 
                 <span class="text-lg font-bold
@@ -106,6 +114,14 @@
 
 <script>
     lucide.createIcons();
+
+    function filterByDate(date) {
+        if (date) {
+            const url = new URL(window.location);
+            url.searchParams.set('date', date);
+            window.location.href = url.toString();
+        }
+    }
 </script>
 
 {% endblock %}
