@@ -19,7 +19,7 @@
         </h1>
 
         <!-- Actions -->
-        <div class="grid grid-cols-2 gap-3 w-full sm:flex sm:flex-row sm:items-center sm:w-auto">
+        <div class="grid grid-cols-3 gap-3 w-full sm:flex sm:flex-row sm:items-center sm:w-auto">
 
             <!-- Date Picker -->
             <div
@@ -30,12 +30,20 @@
                     onchange="filterByDate(this.value)">
             </div>
 
-            <!-- Button -->
+            <!-- Add Entry Button -->
             <a href="{% url 'admin_add_transaction_to_branch' branch.id %}" class="col-span-1 text-center px-4 py-2 gradient-primary text-white rounded-xl
               transition-all duration-300 hover:opacity-80 hover:scale-105
               flex items-center justify-center gap-2 text-sm font-medium w-full">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                Add Entry
+                Add
+            </a>
+
+            <!-- Transfer Button -->
+            <a href="{% url 'admin_transfer' branch.id %}" class="col-span-1 text-center px-4 py-2 bg-orange-500 text-white rounded-xl
+              transition-all duration-300 hover:opacity-80 hover:scale-105
+              flex items-center justify-center gap-2 text-sm font-medium w-full">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                Transfer
             </a>
 
         </div>
@@ -44,7 +52,7 @@
 
 
     <!-- SUMMARY CARDS -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
 
         <!-- Total Expenses (RED = money going out) -->
         <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
@@ -75,6 +83,22 @@
             <h3 class="text-xs uppercase tracking-wide text-gray-500">Total Sales</h3>
             <p class="mt-1 text-2xl font-bold text-green-600">
                 BD {{ balance_total|intcomma }}
+            </p>
+        </div>
+
+        <!-- Total Transfer (ORANGE = transfer out) -->
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+            <h3 class="text-xs uppercase tracking-wide text-gray-500">Total Transfer</h3>
+            <p class="mt-1 text-2xl font-bold text-orange-600">
+                BD {{ total_transfer|intcomma }}
+            </p>
+        </div>
+
+        <!-- Received Transfer (CYAN = transfer in) -->
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+            <h3 class="text-xs uppercase tracking-wide text-gray-500">Received Transfer</h3>
+            <p class="mt-1 text-2xl font-bold text-cyan-600">
+                BD {{ total_received_transfer|intcomma }}
             </p>
         </div>
 
@@ -206,6 +230,92 @@
                 <tr>
                     <td colspan="4" class="py-6 text-center text-gray-500">
                         No cash balance entries today
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TRANSFER TABLE -->
+<div class="bg-white rounded-2xl p-6 mx-2 mb-12 shadow-md">
+    <h2 class="text-xl font-semibold mb-4 text-orange-600">Transfers</h2>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse">
+            <thead class="bg-gray-50">
+                <tr class="text-xs uppercase text-gray-500">
+                    <th class="px-6 py-3 text-center">Time</th>
+                    <th class="px-6 py-3 text-center">Target Branch</th>
+                    <th class="px-6 py-3 text-center">Amount (BD)</th>
+                    <th class="px-6 py-3 text-center">Narration</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y text-sm">
+                {% for t in transfer_transactions %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                        {{ t.created_on|date:"h:i A" }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {{ t.target_branch.name }}
+                    </td>
+                    <td class="px-6 py-4 text-center font-semibold text-orange-600 whitespace-nowrap">
+                        BD {{ t.amount|floatformat:2|intcomma }}
+                    </td>
+                    <td class="px-6 py-4 text-center text-gray-600">
+                        {{ t.description|default:"-" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="py-6 text-center text-gray-500">
+                        No transfer entries today
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- RECEIVED TRANSFER TABLE -->
+<div class="bg-white rounded-2xl p-6 mx-2 mb-12 shadow-md">
+    <h2 class="text-xl font-semibold mb-4 text-cyan-600">Received Transfers</h2>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse">
+            <thead class="bg-gray-50">
+                <tr class="text-xs uppercase text-gray-500">
+                    <th class="px-6 py-3 text-center">Time</th>
+                    <th class="px-6 py-3 text-center">From Branch</th>
+                    <th class="px-6 py-3 text-center">Amount (BD)</th>
+                    <th class="px-6 py-3 text-center">Narration</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y text-sm">
+                {% for transfer in received_transfers %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                        {{ transfer.transaction.created_on|date:"h:i A" }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {{ transfer.source_branch }}
+                    </td>
+                    <td class="px-6 py-4 text-center font-semibold text-cyan-600 whitespace-nowrap">
+                        BD {{ transfer.transaction.amount|floatformat:2|intcomma }}
+                    </td>
+                    <td class="px-6 py-4 text-center text-gray-600">
+                        {{ transfer.transaction.description|default:"-" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="py-6 text-center text-gray-500">
+                        No received transfer entries today
                     </td>
                 </tr>
                 {% endfor %}

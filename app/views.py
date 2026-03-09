@@ -198,53 +198,223 @@ def admin_dashboard(request):
 @login_required(login_url="login")
 def daily_sales_report(request):
     today = timezone.localdate()
+    current_month = today.month
+    current_year = today.year
 
-    selected_date_str = request.GET.get("date")
-    if selected_date_str:
-        try:
-            from datetime import datetime as dt
-            selected_date = dt.strptime(selected_date_str, "%Y-%m-%d").date()
-        except (ValueError, TypeError):
-            selected_date = today
-    else:
-        selected_date = today
+    from calendar import monthrange
+    _, last_day = monthrange(current_year, current_month)
+    start_date = date(current_year, current_month, 1)
+    end_date = date(current_year, current_month, last_day)
 
-    start_of_day = timezone.make_aware(datetime.combine(selected_date, time.min))
-    end_of_day = timezone.make_aware(datetime.combine(selected_date, time.max))
+    # Get all branches
+    branches = Branch.objects.exclude(name__iexact="office").order_by("name")
 
-    transactions = (
-        Transaction.objects
-        .select_related("branch")
-        .filter(created_on__range=(start_of_day, end_of_day))
-        .order_by("branch__name", "created_on")
-    )
+    # Generate daily data for the month
+    daily_data = []
+    for day in range(1, last_day + 1):
+        day_date = date(current_year, current_month, day)
+        start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
+        end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
 
-    branch_data = {}
+        day_branches = []
+        total_day_sales = Decimal('0.00')
 
-    for tx in transactions:
-        branch = tx.branch
+        for branch in branches:
+            # Get transactions for this branch on this day
+            transactions = Transaction.objects.filter(
+                branch=branch,
+                created_on__range=(start_of_day, end_of_day)
+            )
 
-        if branch not in branch_data:
-            branch_data[branch] = {
-                "transactions": [],
-                "balance": Decimal("0.00"),
-            }
+            # Calculate total sales for this branch on this day (PURCHASE + EXPENSE + CASHBALANCE)
+            branch_sales = transactions.filter(transaction_type__in=['PURCHASE', 'EXPENSE', 'CASHBALANCE']).aggregate(
+                total=Sum('amount', default=Decimal('0.00'))
+            )['total'] or Decimal('0.00')
 
-        branch_data[branch]["transactions"].append(tx)
+            day_branches.append({
+                'branch': branch,
+                'total_sales': branch_sales,
+            })
 
-        # New logic: sales = purchase + expense + cashbalance
-        if tx.transaction_type in ["PURCHASE", "EXPENSE", "CASHBALANCE"]:
-            branch_data[branch]["balance"] += tx.amount
-        elif tx.transaction_type == "SALE":
-            branch_data[branch]["balance"] -= tx.amount
+            total_day_sales += branch_sales
+
+        daily_data.append({
+            'date': day_date,
+            'day': day,
+            'branches': day_branches,
+            'total_sales': total_day_sales,
+        })
+
+    # Calculate monthly totals
+    total_month_sales = sum(day['total_sales'] for day in daily_data)
+
+    # Calculate branch monthly totals
+    branch_monthly_totals = []
+    for branch in branches:
+        branch_total_sales = Decimal('0.00')
+        for day_data in daily_data:
+            for branch_data in day_data['branches']:
+                if branch_data['branch'].id == branch.id:
+                    branch_total_sales += branch_data['total_sales']
+        branch_monthly_totals.append({
+            'branch': branch,
+            'total_sales': branch_total_sales,
+        })
 
     context = {
-        "today": selected_date,
-        "branch_data": branch_data,
+        "current_month": current_month,
+        "current_year": current_year,
+        "daily_data": daily_data,
+        "branches": branches,
+        "branch_monthly_totals": branch_monthly_totals,
+        "month_name": date(current_year, current_month, 1).strftime('%B %Y'),
+        "total_month_sales": total_month_sales,
     }
 
     return render(request, "owner/daily_sales_report.html", context)
 
+
+
+
+@login_required(login_url="login")
+def export_monthly_report(request):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from django.http import HttpResponse
+    from io import BytesIO
+
+    today = timezone.localdate()
+    current_month = today.month
+    current_year = today.year
+
+    # Calculate start and end of the current month
+    from calendar import monthrange
+    _, last_day = monthrange(current_year, current_month)
+    start_date = date(current_year, current_month, 1)
+    end_date = date(current_year, current_month, last_day)
+
+    # Get all branches
+    branches = Branch.objects.exclude(name__iexact="office").order_by("name")
+
+    # Create workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Monthly Report - {date(current_year, current_month, 1).strftime('%B %Y')}"
+
+    # Styles
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
+    border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+
+    # Headers
+    headers = ['Date'] + [branch.name for branch in branches] + ['Total']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+        cell.border = border
+
+    # Generate data for the month
+    row_num = 2
+    for day in range(1, last_day + 1):
+        day_date = date(current_year, current_month, day)
+        start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
+        end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
+
+        day_branches = []
+        total_day_sales = Decimal('0.00')
+
+        for branch in branches:
+            # Get transactions for this branch on this day
+            transactions = Transaction.objects.filter(
+                branch=branch,
+                created_on__range=(start_of_day, end_of_day)
+            )
+
+            # Calculate total sales for this branch on this day (PURCHASE + EXPENSE + CASHBALANCE)
+            branch_sales = transactions.filter(transaction_type__in=['PURCHASE', 'EXPENSE', 'CASHBALANCE']).aggregate(
+                total=Sum('amount', default=Decimal('0.00'))
+            )['total'] or Decimal('0.00')
+
+            day_branches.append({
+                'branch': branch,
+                'total_sales': branch_sales,
+            })
+
+            total_day_sales += branch_sales
+
+        # Write data to Excel
+        ws.cell(row=row_num, column=1, value=day_date.strftime('%m/%d/%Y'))
+
+        col_num = 2
+        for branch_data in day_branches:
+            ws.cell(row=row_num, column=col_num, value=float(branch_data['total_sales']) if branch_data['total_sales'] > 0 else None).number_format = '#,##0.00'
+            col_num += 1
+
+        ws.cell(row=row_num, column=col_num, value=float(total_day_sales) if total_day_sales > 0 else None).number_format = '#,##0.00'
+
+        # Apply borders
+        total_cols = 1 + len(branches) + 1
+        for col in range(1, total_cols + 1):
+            ws.cell(row=row_num, column=col).border = border
+
+        row_num += 1
+
+    # Monthly Total Row
+    ws.cell(row=row_num, column=1, value='Monthly Total')
+
+    total_month_sales = Decimal('0.00')
+    col_num = 2
+    for branch in branches:
+        branch_total_sales = Decimal('0.00')
+        for day in range(1, last_day + 1):
+            day_date = date(current_year, current_month, day)
+            start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
+            end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
+            transactions = Transaction.objects.filter(
+                branch=branch,
+                created_on__range=(start_of_day, end_of_day)
+            )
+            branch_total_sales += transactions.filter(transaction_type__in=['PURCHASE', 'EXPENSE', 'CASHBALANCE']).aggregate(total=Sum('amount', default=Decimal('0.00')))['total'] or Decimal('0.00')
+        ws.cell(row=row_num, column=col_num, value=float(branch_total_sales) if branch_total_sales > 0 else None).number_format = '#,##0.00'
+        total_month_sales += branch_total_sales
+        col_num += 1
+
+    ws.cell(row=row_num, column=col_num, value=float(total_month_sales) if total_month_sales > 0 else None).number_format = '#,##0.00'
+
+    # Apply borders and bold to total row
+    total_cols = 1 + len(branches) + 1
+    for col in range(1, total_cols + 1):
+        cell = ws.cell(row=row_num, column=col)
+        cell.border = border
+        cell.font = Font(bold=True)
+
+    # Auto-adjust column widths
+    for col_num, column in enumerate(ws.columns, 1):
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = max(max_length + 2, 15) if col_num > 1 else (max_length + 2)  # Minimum width of 15 for data columns
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    # Create response
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="monthly_report_{current_year}_{current_month:02d}.xlsx"'
+
+    return response
 
 
 
@@ -346,7 +516,7 @@ def Admin_cashflow(request):
 
 @login_required(login_url="login")
 def branch_list(request):
-    branches = Branch.objects.select_related('user').all()
+    branches = Branch.objects.select_related('user').all().order_by("name")
     return render(request, 'owner/admin_branch_list.html', {"branches": branches})
 
 
@@ -412,9 +582,18 @@ def branch_delete(request, branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
     user = branch.user
 
-    user.delete()   
-    messages.success(request, "Deleted successfully")
-    return redirect("branch_list")
+    if request.method == "POST":
+        entered_username = request.POST.get("username")
+        entered_password = request.POST.get("password")
+
+        if entered_username == user.username and user.check_password(entered_password):
+            user.delete()
+            messages.success(request, "Branch deleted successfully")
+            return redirect("branch_list")
+        else:
+            messages.error(request, "Invalid username or password")
+
+    return render(request, "owner/branch_delete_confirm.html", {"branch": branch})
 
 
 
@@ -452,6 +631,7 @@ def branch_detail(request, branch_id):
     expense_transactions = transactions.filter(transaction_type="EXPENSE")
     purchase_transactions = transactions.filter(transaction_type="PURCHASE")
     cashbalance_transactions = transactions.filter(transaction_type="CASHBALANCE")
+    transfer_transactions = transactions.filter(transaction_type="TRANSFER")
 
     totals = transactions.aggregate(
         total_sales=Sum(
@@ -482,12 +662,41 @@ def branch_detail(request, branch_id):
                 output_field=DecimalField()
             )
         ),
+        total_transfer=Sum(
+            Case(
+                When(transaction_type="TRANSFER", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
     )
 
     total_sales = totals["total_sales"] or Decimal("0.00")
     total_expense = totals["total_expense"] or Decimal("0.00")
     total_purchase = totals["total_purchase"] or Decimal("0.00")
     total_cashbalance = totals["total_cashbalance"] or Decimal("0.00")
+    total_transfer = totals["total_transfer"] or Decimal("0.00")
+
+    # Calculate received transfers (SALE transactions from transfers)
+    received_transfers_raw = sales_transactions.filter(description__startswith="Transfer from")
+    total_received_transfer = received_transfers_raw.aggregate(
+        total=Sum("amount", default=Decimal("0.00"))
+    )["total"] or Decimal("0.00")
+
+    # Process received transfers to extract source branch names
+    received_transfers = []
+    for transfer in received_transfers_raw:
+        source_branch = "Unknown"
+        if "Transfer from" in transfer.description:
+            # Extract branch name from "Transfer from BranchName: description"
+            desc_part = transfer.description[14:]  # Remove "Transfer from "
+            if ":" in desc_part:
+                source_branch = desc_part.split(":")[0].strip()
+        
+        received_transfers.append({
+            'transaction': transfer,
+            'source_branch': source_branch
+        })
 
     # New logic: expected_sales = purchase + expense + cashbalance
     balance_total = total_purchase + total_expense + total_cashbalance
@@ -500,10 +709,14 @@ def branch_detail(request, branch_id):
         "expense_transactions": expense_transactions,
         "purchase_transactions": purchase_transactions,
         "cashbalance_transactions": cashbalance_transactions,
+        "transfer_transactions": transfer_transactions,
+        "received_transfers": received_transfers,
         "total_sales": total_sales,
         "total_expense": total_expense,
         "total_purchase": total_purchase,
         "total_cashbalance": total_cashbalance,
+        "total_transfer": total_transfer,
+        "total_received_transfer": total_received_transfer,
         "balance_total": balance_total,
     }
 
@@ -530,10 +743,26 @@ def admin_add_transaction_to_branch(request, branch_id):
             transaction.created_on = timezone.make_aware(datetime.combine(selected_date, timezone.now().time()))
             transaction.full_clean()
             transaction.save()
+
+            # If it's a transfer, create corresponding transaction for target branch
+            if transaction.transaction_type == "TRANSFER":
+                target_branch = transaction.target_branch
+                # Create a SALE transaction for the target branch
+                Transaction.objects.create(
+                    branch=target_branch,
+                    transaction_type="SALE",
+                    amount=transaction.amount,
+                    description=f"Transfer from {branch.name}: {transaction.description or ''}",
+                    created_on=transaction.created_on
+                )
+
             messages.success(request, f"Transaction added successfully to {branch.name}.")
             return redirect("branch_detail", branch_id=branch_id)
     else:
         form = AdminBranchTransactionCreateForm()
+
+    # Limit target_branch choices to other branches
+    form.fields['target_branch'].queryset = Branch.objects.exclude(id=branch.id)
 
     return render(
         request,
@@ -669,6 +898,7 @@ def branch_expense_sales_list(request):
     expense_transactions = transactions.filter(transaction_type="EXPENSE")
     purchase_transactions = transactions.filter(transaction_type="PURCHASE")
     cashbalance_transactions = transactions.filter(transaction_type="CASHBALANCE")
+    transfer_transactions = transactions.filter(transaction_type="TRANSFER")
 
     totals = transactions.aggregate(
      
@@ -693,11 +923,40 @@ def branch_expense_sales_list(request):
                 output_field=DecimalField()
             )
         ),
+        total_transfer=Sum(
+            Case(
+                When(transaction_type="TRANSFER", then="amount"),
+                default=Decimal("0.00"),
+                output_field=DecimalField()
+            )
+        ),
     )
 
     total_expense = totals["total_expense"] or Decimal("0.00")
     total_purchase = totals["total_purchase"] or Decimal("0.00")
     total_cashbalance = totals["total_cashbalance"] or Decimal("0.00")
+    total_transfer = totals["total_transfer"] or Decimal("0.00")
+
+    # Calculate received transfers (SALE transactions from transfers)
+    received_transfers_raw = sales_transactions.filter(description__startswith="Transfer from")
+    total_received_transfer = received_transfers_raw.aggregate(
+        total=Sum("amount", default=Decimal("0.00"))
+    )["total"] or Decimal("0.00")
+
+    # Process received transfers to extract source branch names
+    received_transfers = []
+    for transfer in received_transfers_raw:
+        source_branch = "Unknown"
+        if "Transfer from" in transfer.description:
+            # Extract branch name from "Transfer from BranchName: description"
+            desc_part = transfer.description[14:]  # Remove "Transfer from "
+            if ":" in desc_part:
+                source_branch = desc_part.split(":")[0].strip()
+        
+        received_transfers.append({
+            'transaction': transfer,
+            'source_branch': source_branch
+        })
 
     # New logic: sales_of_day = purchase + expense + cashbalance
     balance_total = total_purchase + total_expense + total_cashbalance
@@ -710,9 +969,13 @@ def branch_expense_sales_list(request):
         "expense_transactions": expense_transactions,
         "purchase_transactions": purchase_transactions,
         "cashbalance_transactions": cashbalance_transactions,
+        "transfer_transactions": transfer_transactions,
+        "received_transfers": received_transfers,
         "total_expense": total_expense,
         "total_purchase": total_purchase,
         "total_cashbalance": total_cashbalance,
+        "total_transfer": total_transfer,
+        "total_received_transfer": total_received_transfer,
         "balance_total": balance_total,
     }
 
@@ -737,6 +1000,19 @@ def branch_expense_sales_entry(request):
             transaction.created_on = timezone.make_aware(datetime.combine(selected_date, timezone.now().time()))
             transaction.full_clean()  # important
             transaction.save()
+
+            # If it's a transfer, create corresponding transaction for target branch
+            if transaction.transaction_type == "TRANSFER":
+                target_branch = transaction.target_branch
+                # Create a SALE transaction for the target branch
+                Transaction.objects.create(
+                    branch=target_branch,
+                    transaction_type="SALE",
+                    amount=transaction.amount,
+                    description=f"Transfer from {branch.name}: {transaction.description or ''}",
+                    created_on=transaction.created_on
+                )
+
             messages.success(request, "Transaction added successfully.")
             return redirect("branch_expense_sales_list")
     else:
@@ -750,6 +1026,127 @@ def branch_expense_sales_entry(request):
 
 
 
+
+
+@login_required(login_url="login")
+def branch_transfer(request):
+    try:
+        branch = request.user.branch_account
+    except Branch.DoesNotExist:
+        messages.error(request, "You do not have a branch assigned. Please contact admin.")
+        return redirect("branch_dashboard")
+
+    if request.method == "POST":
+        # Create transfer transaction
+        target_branch_id = request.POST.get("target_branch")
+        amount = request.POST.get("amount")
+        description = request.POST.get("description", "")
+        created_on = request.POST.get("created_on")
+
+        try:
+            target_branch = Branch.objects.get(id=target_branch_id)
+            amount = Decimal(amount)
+            created_on = datetime.strptime(created_on, "%Y-%m-%d").date()
+            created_on_aware = timezone.make_aware(datetime.combine(created_on, timezone.now().time()))
+
+            # Create transfer out transaction
+            transfer_out = Transaction.objects.create(
+                branch=branch,
+                transaction_type="TRANSFER",
+                target_branch=target_branch,
+                amount=amount,
+                description=description,
+                created_on=created_on_aware
+            )
+
+            # Create corresponding sale for target branch
+            Transaction.objects.create(
+                branch=target_branch,
+                transaction_type="SALE",
+                amount=amount,
+                description=f"Transfer from {branch.name}: {description}",
+                created_on=created_on_aware
+            )
+
+            messages.success(request, f"Successfully transferred BD {amount} to {target_branch.name}.")
+            return redirect("branch_expense_sales_list")
+
+        except (Branch.DoesNotExist, ValueError, Decimal.InvalidOperation) as e:
+            messages.error(request, "Invalid data provided.")
+
+    # Get other branches
+    other_branches = Branch.objects.exclude(id=branch.id)
+    today = timezone.now().date()
+
+    return render(
+        request,
+        "branch/branch_transfer.html",
+        {
+            "branch": branch,
+            "other_branches": other_branches,
+            "today": today
+        }
+    )
+
+
+@login_required(login_url="login")
+def admin_transfer(request, branch_id):
+    if not request.user.is_superuser:
+        return redirect("login")
+
+    branch = get_object_or_404(Branch, id=branch_id)
+
+    if request.method == "POST":
+        # Create transfer transaction
+        target_branch_id = request.POST.get("target_branch")
+        amount = request.POST.get("amount")
+        description = request.POST.get("description", "")
+        created_on = request.POST.get("created_on")
+
+        try:
+            target_branch = Branch.objects.get(id=target_branch_id)
+            amount = Decimal(amount)
+            created_on = datetime.strptime(created_on, "%Y-%m-%d").date()
+            created_on_aware = timezone.make_aware(datetime.combine(created_on, timezone.now().time()))
+
+            # Create transfer out transaction
+            transfer_out = Transaction.objects.create(
+                branch=branch,
+                transaction_type="TRANSFER",
+                target_branch=target_branch,
+                amount=amount,
+                description=description,
+                created_on=created_on_aware
+            )
+
+            # Create corresponding sale for target branch
+            Transaction.objects.create(
+                branch=target_branch,
+                transaction_type="SALE",
+                amount=amount,
+                description=f"Transfer from {branch.name}: {description}",
+                created_on=created_on_aware
+            )
+
+            messages.success(request, f"Successfully transferred BD {amount} from {branch.name} to {target_branch.name}.")
+            return redirect("branch_detail", branch_id=branch_id)
+
+        except (Branch.DoesNotExist, ValueError, Decimal.InvalidOperation) as e:
+            messages.error(request, "Invalid data provided.")
+
+    # Get other branches
+    other_branches = Branch.objects.exclude(id=branch.id)
+    today = timezone.now().date()
+
+    return render(
+        request,
+        "owner/admin_transfer.html",
+        {
+            "branch": branch,
+            "other_branches": other_branches,
+            "today": today
+        }
+    )
 
 
 @login_required(login_url="login")

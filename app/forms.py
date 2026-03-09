@@ -166,6 +166,7 @@ class AdminBranchTransactionCreateForm(forms.ModelForm):
                 ("PURCHASE", "Purchase"),
                 ("EXPENSE", "Expense"),
                 ("CASHBALANCE", "Cash Balance"),
+                ("TRANSFER", "Transfer"),
             ]
             self.fields['transaction_type'].choices = choices
 
@@ -173,6 +174,7 @@ class AdminBranchTransactionCreateForm(forms.ModelForm):
         model = Transaction
         fields = [
             "transaction_type",
+            "target_branch",
             "purchase_category",
             "expense_category",
             "cashbalance_category",
@@ -183,6 +185,10 @@ class AdminBranchTransactionCreateForm(forms.ModelForm):
 
         widgets = {
             "transaction_type": forms.Select(
+                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+            ),
+
+            "target_branch": forms.Select(
                 attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
             ),
 

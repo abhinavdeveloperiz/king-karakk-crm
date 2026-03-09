@@ -17,6 +17,7 @@ urlpatterns = [
 
     path('', views.admin_dashboard, name='admin_dashboard'),
     path('admin/daily-sales/', views.daily_sales_report, name='daily_sales_report'),
+    path('admin/monthly-export/', views.export_monthly_report, name='export_monthly_report'),
     path('admin/cashflow/', views.Admin_cashflow, name='admin_cashflow'),
 
     path('admin/branch/list/', views.branch_list, name='branch_list'),
@@ -28,7 +29,7 @@ urlpatterns = [
     path("branches/<int:branch_id>/", views.branch_detail, name="branch_detail"),
 
     path('admin/branch/<int:branch_id>/add-transaction/', views.admin_add_transaction_to_branch, name='admin_add_transaction_to_branch'),
-
+    path('admin/branch/<int:branch_id>/transfer/', views.admin_transfer, name='admin_transfer'),
     path('admin/branch/<int:branch_id>/delete/', views.branch_delete, name='branch_delete'),
 
 
@@ -38,6 +39,7 @@ urlpatterns = [
     path('branch/', views.branch_dashboard, name='branch_dashboard'), 
     path('branch/expense-entry/list/', views.branch_expense_sales_list, name='branch_expense_sales_list'),
     path('branch/expense-entry/add/', views.branch_expense_sales_entry, name='branch_expense_sales_add'),
+    path('branch/transfer/', views.branch_transfer, name='branch_transfer'),
     path('branch/profile/', views.branch_profile, name='branch_profile'),
 ]
 

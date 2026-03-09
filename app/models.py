@@ -24,31 +24,7 @@ class Branch(models.Model):
     
 
 
-class SalesCategory(models.Model):
-    name = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.name
-
-
-class PurchaseCategory(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
-class ExpenseCategory(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-class CashBalanceCategory(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
 
 
 class Transaction(models.Model):
@@ -78,11 +54,16 @@ class Transaction(models.Model):
         ("PURCHASE", "Purchase"),
         ("EXPENSE", "Expense"),
         ("CASHBALANCE", "Cash Balance"),
+        ("TRANSFER", "Transfer"),
     )
 
 
     branch = models.ForeignKey(
         Branch, on_delete=models.CASCADE, related_name="transactions"
+    )
+
+    target_branch = models.ForeignKey(
+        Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name="received_transfers"
     )
 
     transaction_type = models.CharField(max_length=12, choices=TRANSACTION_TYPE_CHOICES

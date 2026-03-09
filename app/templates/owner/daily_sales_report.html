@@ -1,127 +1,112 @@
 {% extends "base.html" %}
+{% load humanize %}
+{% load number_format %}
 {% block content %}
 
-<div class="space-y-10">
+<div class="space-y-8">
 
     <!-- HEADER -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">
-            Daily Branch Report – {{ today|date:"M d, Y" }}
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3 uppercase">
+            <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
+                <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
+            </div>
+            Monthly Report – {{ month_name }}
         </h1>
 
-        <div
-            class="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow border border-gray-200 w-full sm:w-auto">
-            <i data-lucide="calendar" class="w-4 h-4 text-gray-600"></i>
-            <input type="date" id="dateFilter" value="{{ today|date:'Y-m-d' }}"
-                class="border-none outline-none text-sm font-medium text-gray-700 w-full"
-                onchange="filterByDate(this.value)">
-        </div>
+
+
+        <!-- Export Button -->
+        <a href="{% url 'export_monthly_report' %}"
+            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition hover:translate-y-0.5 flex items-center gap-2 w-48">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            Export to Excel
+        </a>
+
+
+
     </div>
 
-    {% for branch, data in branch_data.items %}
-    <div class="bg-white rounded-2xl shadow-md p-6 space-y-4">
-
-        <!-- Branch Name -->
-        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <i data-lucide="store" class="w-5 h-5 text-indigo-600"></i>
-            {{ branch.name }}
-        </h2>
-
-        <!-- Transactions Table -->
+    <!-- MONTHLY SUMMARY TABLE -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full border-collapse">
+            <table class="min-w-full">
                 <thead class="bg-gray-50">
-                    <tr class="text-xs uppercase text-gray-500">
-                        <th class="px-4 py-3 text-center">Time</th>
-                        <th class="px-4 py-3 text-center">Type</th>
-                        <th class="px-4 py-3 text-center">Amount (BD)</th>
-                        <th class="px-4 py-3 text-center">Narration</th>
+                    <tr class="text-xs uppercase text-gray-500 border-b">
+                        <th class="px-6 py-4 text-left font-semibold ">Date</th>
+                        {% for branch in branches %}
+                        <th class="px-6 py-4 text-center font-semibold border-x border-gray-300">{{ branch.name }}</th>
+                        {% endfor %}
+                        <th class="px-6 py-4 text-center font-semibold">Total</th>
                     </tr>
                 </thead>
-
-                <tbody class="divide-y text-sm">
-                    {% for t in data.transactions %}
+                <tbody class="divide-y divide-gray-200">
+                    {% for day_data in daily_data %}
                     <tr class="hover:bg-gray-50">
-
-                        <td class="px-4 py-3 text-center whitespace-nowrap">
-                            {{ t.created_on|date:"h:i A" }}
+                        <td class="px-6 py-4 font-medium text-gray-900">
+                            {{ day_data.date|date:"M d, D" }}
+                        </td>
+                        {% for branch_data in day_data.branches %}
+                        <td class="px-6 py-4 text-center font-semibold text-green-600 border-x border-gray-200">
+                            {% if branch_data.total_sales > 0 %}
+                            {{ branch_data.total_sales|floatformat:2|intcomma }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <td class="px-6 py-4 text-center font-bold text-green-700">
+                            {% if day_data.total_sales > 0 %}
+                            {{ day_data.total_sales|floatformat:2|intcomma }}
+                            {% else %}
+                            -
+                            {% endif %}
                         </td>
 
-                        <td class="px-4 py-3 text-center font-medium
-                            {% if t.transaction_type == 'SALE' %} text-green-600
-                            {% elif t.transaction_type == 'EXPENSE' %} text-red-600
-                            {% elif t.transaction_type == 'PURCHASE' %} text-purple-600
-                            {% elif t.transaction_type == 'CASHBALANCE' %} text-orange-600
-                            {% else %} text-gray-600 {% endif %}
-                        ">
-                            {{ t.get_transaction_type_display }}
-                        </td>
-
-                        <td class="px-4 py-3 text-center font-semibold whitespace-nowrap
-                            {% if t.transaction_type == 'SALE' %} text-green-600
-                            {% elif t.transaction_type == 'EXPENSE' %} text-red-600
-                            {% elif t.transaction_type == 'PURCHASE' %} text-purple-600
-                            {% elif t.transaction_type == 'CASHBALANCE' %} text-orange-600
-                            {% else %} text-gray-600 {% endif %}
-                        ">
-                            BD {{ t.amount|floatformat:2 }}
-                        </td>
-
-                        <td class="px-4 py-3 text-center text-gray-600">
-                            {{ t.description|default:"NULL" }}
-                        </td>
-
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="py-6 text-center text-gray-500">
-                            No transactions today
-                        </td>
                     </tr>
                     {% endfor %}
+                    <!-- Monthly Total Row -->
+                    <tr class="bg-gray-100 border-t-2 border-gray-300">
+                        <td class="px-6 py-3 font-bold text-gray-800">
+                            Monthly Total
+                        </td>
+                        {% for branch_total in branch_monthly_totals %}
+                        <td class="px-6 py-3 text-center font-bold text-green-800">
+                            {% if branch_total.total_sales > 0 %}
+                            {{ branch_total.total_sales|short_indian }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                        <td class="px-6 py-3 text-center font-bold text-green-900">
+                            {% if total_month_sales > 0 %}
+                            {{ total_month_sales|short_indian }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+
                 </tbody>
             </table>
         </div>
+    </div>
 
-        <!-- CASH BALANCE -->
-        <div class="pt-4 border-t">
-            <div class="flex items-center justify-between">
-                <span class="text-base font-semibold text-gray-700">
-                    Total Sales:
-                </span>
-
-                <span class="text-lg font-bold
-            {% if data.balance >= 0 %}
-                text-green-600
-            {% else %}
-                text-red-600
-            {% endif %}
-        ">
-                    BD {{ data.balance|floatformat:2 }}
-                </span>
-            </div>
+    <!-- MONTH SUMMARY CARDS -->
+    <div class="grid grid-cols-1 gap-6">
+        <div class="bg-green-500 p-6 rounded-2xl shadow-md text-center border border-green-300 w-60 mx-auto">
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Monthly Sales</h3>
+            <p class="text-3xl font-bold text-green-600">
+                BD {{ total_month_sales|short_indian }}
+            </p>
         </div>
-
-
     </div>
-    {% empty %}
-    <div class="text-center py-10 text-gray-500">
-        No transactions recorded today.
-    </div>
-    {% endfor %}
 
 </div>
 
 <script>
     lucide.createIcons();
-
-    function filterByDate(date) {
-        if (date) {
-            const url = new URL(window.location);
-            url.searchParams.set('date', date);
-            window.location.href = url.toString();
-        }
-    }
 </script>
 
 {% endblock %}

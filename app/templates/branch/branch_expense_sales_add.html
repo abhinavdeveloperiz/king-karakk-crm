@@ -50,17 +50,6 @@
                 {% endif %}
             </div>
 
-            <!-- Date -->
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">
-                    Date
-                </label>
-                {{ form.created_on }}
-                {% if form.created_on.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.created_on.errors.0 }}</p>
-                {% endif %}
-            </div>
-
             <!-- Purchase Category -->
             <div id="purchase-category" class="hidden transition-all duration-300">
                 <label class="block text-sm font-semibold text-gray-700 mb-1">
@@ -131,7 +120,7 @@
 
 
 <!-- play sound -->
- <script>
+<script>
     function playSaveSound() {
         const sound = document.getElementById("saveSound");
         if (sound) {
