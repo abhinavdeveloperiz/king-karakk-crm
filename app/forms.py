@@ -47,34 +47,18 @@ class BranchEditForm(forms.Form):
 
 
 
-class BranchTransactionCreateForm(forms.ModelForm):
+from django import forms
+from django.utils import timezone
+from .models import Transaction, Branch
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        today = timezone.now().date()
-        yesterday = today - timezone.timedelta(days=2)
-        tomorrow = today + timezone.timedelta(days=2)
-        self.fields['created_on'].widget.attrs.update({
-            'min': yesterday.isoformat(),
-            'max': tomorrow.isoformat(),
-        })
-        self.initial['created_on'] = today
-        
-        # Remove SALE option from branch users - sales are auto-calculated
-        if 'transaction_type' in self.fields:
-            self.fields['transaction_type'].queryset = None  # This won't work for choices
-            # Instead, we'll limit choices in the model's __init__ for ModelForm
-            choices = [
-                ("PURCHASE", "Purchase"),
-                ("EXPENSE", "Expense"),
-                ("CASHBALANCE", "Cash Balance"),
-            ]
-            self.fields['transaction_type'].choices = choices
+
+class BranchTransactionCreateForm(forms.ModelForm):
 
     class Meta:
         model = Transaction
         fields = [
             "transaction_type",
+            "target_branch",
             "purchase_category",
             "expense_category",
             "cashbalance_category",
@@ -84,43 +68,34 @@ class BranchTransactionCreateForm(forms.ModelForm):
         ]
 
         widgets = {
-            "transaction_type": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
-            ),
-
-            "purchase_category": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
-            ),
-
-            "expense_category": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
-            ),
-
-            "cashbalance_category": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
-            ),
-
-            "amount": forms.NumberInput(
-                attrs={
-                    "class": "form-input w-full border-2 rounded-lg p-2",
-                    "placeholder": "Enter Amount"
-                }
-            ),
-
-            "description": forms.Textarea(
-                attrs={
-                    "class": "form-input w-full border-2 rounded-lg p-2",
-                    "rows": 2
-                }
-            ),
-
-            "created_on": forms.DateInput(
-                attrs={
-                    "type": "date",
-                    "class": "form-input w-full border-2 rounded-lg p-2"
-                }
-            ),
+            "transaction_type": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
+            "target_branch": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
+            "purchase_category": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
+            "expense_category": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
+            "cashbalance_category": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
+            "amount": forms.NumberInput(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
+            "description": forms.Textarea(attrs={"class": "form-input w-full border-2 rounded-lg p-2", "rows": 2}),
+            "created_on": forms.DateInput(attrs={"type": "date", "class": "form-input w-full border-2 rounded-lg p-2"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        branch = kwargs.pop("branch", None)
+        super().__init__(*args, **kwargs)
+
+        today = timezone.localdate()
+        self.initial["created_on"] = today
+
+        # ✅ Allow TRANSFER now
+        self.fields["transaction_type"].choices = [
+            ("PURCHASE", "Purchase"),
+            ("EXPENSE", "Expense"),
+            ("CASHBALANCE", "Cash Balance"),
+            ("TRANSFER", "Transfer"),
+        ]
+
+        # ✅ Prevent selecting same branch
+        if branch:
+            self.fields["target_branch"].queryset = Branch.objects.exclude(id=branch.id)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -129,8 +104,9 @@ class BranchTransactionCreateForm(forms.ModelForm):
         purchase = cleaned_data.get("purchase_category")
         expense = cleaned_data.get("expense_category")
         cashbalance = cleaned_data.get("cashbalance_category")
+        target_branch = cleaned_data.get("target_branch")
 
-        # Clear unused fields
+        # Clear unused
         if tx_type != "PURCHASE":
             cleaned_data["purchase_category"] = None
         if tx_type != "EXPENSE":
@@ -138,17 +114,22 @@ class BranchTransactionCreateForm(forms.ModelForm):
         if tx_type != "CASHBALANCE":
             cleaned_data["cashbalance_category"] = None
 
-        # Enforce required category
+        # Required checks
         if tx_type == "PURCHASE" and not purchase:
-            self.add_error("purchase_category", "Purchase category is required")
+            self.add_error("purchase_category", "Required")
 
         if tx_type == "EXPENSE" and not expense:
-            self.add_error("expense_category", "Expense category is required")
+            self.add_error("expense_category", "Required")
 
         if tx_type == "CASHBALANCE" and not cashbalance:
-            self.add_error("cashbalance_category", "Cash balance category is required")
+            self.add_error("cashbalance_category", "Required")
+
+        if tx_type == "TRANSFER" and not target_branch:
+            self.add_error("target_branch", "Target branch required")
 
         return cleaned_data
+
+
 
 
 class AdminBranchTransactionCreateForm(forms.ModelForm):

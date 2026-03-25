@@ -7,13 +7,11 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
 
-
         <a href="javascript:history.back()"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-300 gradient-primary hover:opacity-80 text-white transition text-sm font-medium w-24">
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-300 gradient-primary text-white text-sm font-medium w-24">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             Back
         </a>
-
 
         <div class="flex items-center gap-3 uppercase">
             <div class="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center shadow">
@@ -25,8 +23,6 @@
             </div>
         </div>
 
-
-
     </div>
 
     <!-- Card -->
@@ -35,6 +31,13 @@
     </audio>
 
     <div class="bg-white/90 backdrop-blur rounded-3xl shadow-xl border p-6 sm:p-10">
+
+        <!-- 🔴 SHOW FORM ERRORS -->
+        {% if form.errors %}
+        <div class="bg-red-100 text-red-600 p-3 rounded mb-4 text-sm">
+            {{ form.errors }}
+        </div>
+        {% endif %}
 
         <form method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-6" onsubmit="playSaveSound()">
             {% csrf_token %}
@@ -45,54 +48,105 @@
                     Transaction Type
                 </label>
                 {{ form.transaction_type }}
-                {% if form.transaction_type.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.transaction_type.errors.0 }}</p>
-                {% endif %}
+            </div>
+
+            <!-- 🔥 TARGET BRANCH (FOR TRANSFER) -->
+            <div id="target-branch" class="hidden">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Target Branch
+                </label>
+                {{ form.target_branch }}
             </div>
 
             <!-- Purchase Category -->
-            <div id="purchase-category" class="hidden transition-all duration-300">
+            <div id="purchase-category" class="hidden">
                 <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Purchase Reason
                 </label>
                 {{ form.purchase_category }}
-                {% if form.purchase_category.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.purchase_category.errors.0 }}</p>
-                {% endif %}
             </div>
 
             <!-- Expense Category -->
-            <div id="expense-category" class="hidden transition-all duration-300">
+            <div id="expense-category" class="hidden">
                 <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Expense Reason
                 </label>
                 {{ form.expense_category }}
-                {% if form.expense_category.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.expense_category.errors.0 }}</p>
-                {% endif %}
             </div>
 
             <!-- Cash Balance Category -->
-            <div id="cashbalance-category" class="hidden transition-all duration-300">
+            <div id="cashbalance-category" class="hidden">
                 <label class="block text-sm font-semibold text-gray-700 mb-1">
                     Cash Balance Type
                 </label>
                 {{ form.cashbalance_category }}
-                {% if form.cashbalance_category.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.cashbalance_category.errors.0 }}</p>
-                {% endif %}
             </div>
 
             <!-- Amount -->
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">
-                    Amount (BD)
+                    Amount
                 </label>
                 {{ form.amount }}
-                {% if form.amount.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.amount.errors.0 }}</p>
-                {% endif %}
             </div>
+
+            <!-- Date -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    Date
+                </label>
+                {{ form.created_on }}
+            </div>
+
+
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    const dateInput = document.getElementById("id_created_on");
+
+                    if (!dateInput) return;
+
+                    // Get today
+                    const today = new Date();
+
+                    // Helper function
+                    function formatDate(d) {
+                        return d.toISOString().split("T")[0];
+                    }
+
+                    // Calculate dates
+                    const yesterday = new Date(today);
+                    yesterday.setDate(today.getDate() - 1);
+
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(today.getDate() + 1);
+
+                    // Set min & max
+                    dateInput.min = formatDate(yesterday);
+                    dateInput.max = formatDate(tomorrow);
+
+                    // Allowed values
+                    const allowedDates = [
+                        formatDate(yesterday),
+                        formatDate(today),
+                        formatDate(tomorrow)
+                    ];
+
+                    // 🔒 Restrict manually typed values
+                    dateInput.addEventListener("change", function () {
+                        if (!allowedDates.includes(this.value)) {
+                            alert("Only yesterday, today, or tomorrow allowed");
+
+                            // Reset to today
+                            this.value = formatDate(today);
+                        }
+                    });
+
+                });
+            </script>
+
+
 
             <!-- Description -->
             <div class="sm:col-span-2">
@@ -100,15 +154,12 @@
                     Narration
                 </label>
                 {{ form.description }}
-                {% if form.description.errors %}
-                <p class="text-red-500 text-xs mt-1">{{ form.description.errors.0 }}</p>
-                {% endif %}
             </div>
 
             <!-- Submit -->
             <div class="sm:col-span-2">
                 <button type="submit"
-                    class="w-full py-3 rounded-xl gradient-primary text-white font-bold tracking-wide shadow-lg hover:shadow-xl hover:scale-[1.01] transition">
+                    class="w-full py-3 rounded-xl gradient-primary text-white font-bold shadow hover:scale-[1.01] transition">
                     Save Transaction
                 </button>
             </div>
@@ -118,8 +169,7 @@
 
 </div>
 
-
-<!-- play sound -->
+<!-- Sound -->
 <script>
     function playSaveSound() {
         const sound = document.getElementById("saveSound");
@@ -130,13 +180,16 @@
     }
 </script>
 
+<!-- Toggle Fields -->
 <script>
     lucide.createIcons();
 
     const transactionType = document.getElementById("id_transaction_type");
+
     const purchaseDiv = document.getElementById("purchase-category");
     const expenseDiv = document.getElementById("expense-category");
     const cashbalanceDiv = document.getElementById("cashbalance-category");
+    const targetDiv = document.getElementById("target-branch");
 
     function toggleCategories() {
         const value = transactionType.value;
@@ -144,6 +197,7 @@
         purchaseDiv.classList.add("hidden");
         expenseDiv.classList.add("hidden");
         cashbalanceDiv.classList.add("hidden");
+        targetDiv.classList.add("hidden");
 
         if (value === "PURCHASE") {
             purchaseDiv.classList.remove("hidden");
@@ -151,6 +205,8 @@
             expenseDiv.classList.remove("hidden");
         } else if (value === "CASHBALANCE") {
             cashbalanceDiv.classList.remove("hidden");
+        } else if (value === "TRANSFER") {
+            targetDiv.classList.remove("hidden");
         }
     }
 

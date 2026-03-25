@@ -419,97 +419,102 @@ def export_monthly_report(request):
 
 
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import datetime, date, time
+from decimal import Decimal
+from django.db.models import Sum
+from calendar import monthrange
+
+
 @login_required(login_url="login")
 def Admin_cashflow(request):
 
-    branch_id = request.GET.get("branch", "all")
-    month = request.GET.get("month") 
+    today = timezone.localdate()
 
-    qs = Transaction.objects.select_related("branch")
+    selected_month = int(request.GET.get("month", today.month))
+    selected_year = int(request.GET.get("year", today.year))
 
-    # Branch filter
-    if branch_id != "all":
-        qs = qs.filter(branch_id=branch_id)
+    # Month range
+    _, last_day = monthrange(selected_year, selected_month)
 
+    branches = Branch.objects.all().order_by("name")
 
-    if month:
-        year, mon = map(int, month.split("-"))
+    cashflow_data = []
 
-        start_date = date(year, mon, 1)
-        last_day = calendar.monthrange(year, mon)[1]
-        end_date = date(year, mon, last_day)
+    for day in range(1, last_day + 1):
+        day_date = date(selected_year, selected_month, day)
 
-        qs = qs.filter(created_on__date__range=(start_date, end_date))
+        start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
+        end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
 
-
-    summary = (
-        qs.values("created_on__date", "branch__name")
-        .annotate(
-            sales=Sum(
-                Case(
-                    When(transaction_type="SALE", then="amount"),
-                    default=Decimal("0.00"),
-                    output_field=DecimalField(),
-                )
-            ),
-            expense=Sum(
-                Case(
-                    When(transaction_type="EXPENSE", then="amount"),
-                    default=Decimal("0.00"),
-                    output_field=DecimalField(),
-                )
-            ),
-            purchase=Sum(
-                Case(
-                    When(transaction_type="PURCHASE", then="amount"),
-                    default=Decimal("0.00"),
-                    output_field=DecimalField(),
-                )
-            ),
-            cashbalance=Sum(
-                Case(
-                    When(transaction_type="CASHBALANCE", then="amount"),
-                    default=Decimal("0.00"),
-                    output_field=DecimalField(),
-                )
-            ),
+        day_transactions = Transaction.objects.filter(
+            created_on__range=(start_of_day, end_of_day)
         )
-        .order_by("created_on__date", "branch__name")
-    )
 
-    grand_total = Decimal("0.00")
+        branch_data = []
 
-    for row in summary:
-        # New logic: net_cash = purchase + expense + cashbalance - sales
-        net = ((row["purchase"] or 0) + (row["expense"] or 0) + (row["cashbalance"] or 0)) - (row["sales"] or 0)
-        row["net_cash"] = net
-        row["net_display"] = abs(net)
-        row["is_positive"] = net >= 0
-        grand_total += net
+        for branch in branches:
 
-    # ---------------- TRANSACTION LIST ----------------
-    transaction_list = qs.order_by("-created_on")
-    paginator = Paginator(transaction_list, 30)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+            branch_tx = day_transactions.filter(branch=branch)
+
+            purchase = branch_tx.filter(transaction_type="PURCHASE").aggregate(
+                total=Sum("amount")
+            )["total"] or Decimal("0.00")
+
+            expense = branch_tx.filter(transaction_type="EXPENSE").aggregate(
+                total=Sum("amount")
+            )["total"] or Decimal("0.00")
+
+            cashbalance = branch_tx.filter(transaction_type="CASHBALANCE").aggregate(
+                total=Sum("amount")
+            )["total"] or Decimal("0.00")
+
+            # Transfers
+            transfer_out = branch_tx.filter(
+                transaction_type="TRANSFER"
+            ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+            transfer_in = day_transactions.filter(
+                transaction_type="TRANSFER",
+                target_branch=branch
+            ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+            # 💡 SALES LOGIC (as you asked)
+            sales = purchase + expense + cashbalance + transfer_in - transfer_out
+
+            branch_data.append({
+                "branch": branch,
+                "purchase": purchase,
+                "expense": expense,
+                "cashbalance": cashbalance,
+                "transfer_in": transfer_in,
+                "transfer_out": transfer_out,
+                "sales": sales,
+            })
+
+        cashflow_data.append({
+            "date": day_date,
+            "branches": branch_data,
+        })
+
+    # 🔁 Separate Transfer Table Data
+    transfers = Transaction.objects.filter(
+        transaction_type="TRANSFER",
+        created_on__month=selected_month,
+        created_on__year=selected_year
+    ).select_related("branch", "target_branch").order_by("-created_on")
 
     context = {
-        "summary": summary,
-        "transactions": page_obj,
-        "branches": Branch.objects.all(),
-        "selected_branch": branch_id,
-        "selected_month": month,
-        "grand_total": grand_total,
-        "query_string": request.GET.urlencode(),
+        "cashflow_data": cashflow_data,
+        "branches": branches,
+        "transfers": transfers,
+        "selected_month": selected_month,
+        "selected_year": selected_year,
     }
 
     return render(request, "owner/admin_cashflow.html", context)
-
-
-
-
-
-
 
 
 # -------------------------------------------------------------- 
@@ -983,47 +988,49 @@ def branch_expense_sales_list(request):
 
 
 
+
 @login_required(login_url="login")
 def branch_expense_sales_entry(request):
+
     try:
         branch = request.user.branch_account
     except Branch.DoesNotExist:
-        messages.error(request, "You do not have a branch assigned. Please contact admin.")
+        messages.error(request, "No branch assigned")
         return redirect("branch_dashboard")
 
     if request.method == "POST":
-        form = BranchTransactionCreateForm(request.POST)
+        form = BranchTransactionCreateForm(request.POST, branch=branch)
+
         if form.is_valid():
             transaction = form.save(commit=False)
             transaction.branch = branch
-            selected_date = form.cleaned_data['created_on']
-            transaction.created_on = timezone.make_aware(datetime.combine(selected_date, timezone.now().time()))
-            transaction.full_clean()  # important
+
+            selected_date = form.cleaned_data["created_on"]
+            transaction.created_on = timezone.make_aware(
+                datetime.combine(selected_date, datetime.now().time())
+            )
+
             transaction.save()
 
-            # If it's a transfer, create corresponding transaction for target branch
             if transaction.transaction_type == "TRANSFER":
-                target_branch = transaction.target_branch
-                # Create a SALE transaction for the target branch
                 Transaction.objects.create(
-                    branch=target_branch,
+                    branch=transaction.target_branch,
                     transaction_type="SALE",
                     amount=transaction.amount,
-                    description=f"Transfer from {branch.name}: {transaction.description or ''}",
+                    description=f"Transfer from {branch.name}",
                     created_on=transaction.created_on
                 )
 
-            messages.success(request, "Transaction added successfully.")
+            messages.success(request, "Saved successfully")
             return redirect("branch_expense_sales_list")
+
+        else:
+            print(form.errors)  # DEBUG
+
     else:
-        form = BranchTransactionCreateForm()
+        form = BranchTransactionCreateForm(branch=branch)
 
-    return render(
-        request,
-        "branch/branch_expense_sales_add.html",
-        {"form": form}
-    )
-
+    return render(request, "branch/branch_expense_sales_add.html", {"form": form})
 
 
 

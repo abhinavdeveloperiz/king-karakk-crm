@@ -1,159 +1,128 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="space-y-10">
+<div class="max-w-7xl mx-auto py-10 px-4">
 
-    <!-- HEADER -->
-    <h1 class="text-3xl font-bold text-gray-900 uppercase">
-        Monthly Cashflow
+    <h1 class="text-2xl font-bold mb-6">
+        Cashflow
     </h1>
 
-    <!-- FILTERS -->
-    <form method="get" class="bg-white p-6 rounded-xl shadow grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <!-- MAIN TABLE -->
+    <div class="bg-white rounded-2xl shadow mb-10 overflow-x-auto">
 
-        <div>
-            <label class="text-sm font-medium">Branch</label>
-            <select name="branch" class="w-full px-4 py-2 border rounded-lg">
-                <option value="all">All Branches</option>
-                {% for b in branches %}
-                <option value="{{ b.id }}"
-                    {% if selected_branch == b.id|stringformat:"s" %}selected{% endif %}>
-                    {{ b.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
+        <table class="w-full text-sm">
 
-        <div>
-            <label class="text-sm font-medium">Month</label>
-            <input type="month" name="month" value="{{ selected_month }}"
-                   class="w-full px-4 py-2 border rounded-lg">
-        </div>
-
-        <div class="flex items-end">
-            <button class="w-full px-6 py-2 bg-indigo-600 text-white rounded-lg">
-                Apply Filters
-            </button>
-        </div>
-    </form>
-
-    <!-- ================= SUMMARY TABLE ================= -->
-    <div class="bg-white rounded-xl shadow border overflow-x-auto">
-
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-800 text-white">
+            <thead class="bg-gray-100">
                 <tr>
-                    <th class="px-6 py-3">Date</th>
-                    <th class="px-6 py-3">Branch</th>
-                    <th class="px-6 py-3 text-right">Sales</th>
-                    <th class="px-6 py-3 text-right">Expense</th>
-                    <th class="px-6 py-3 text-right">Purchase</th>
-                    <th class="px-6 py-3 text-right">Cash Balance</th>
-                    <th class="px-6 py-3 text-right">Expected Sales</th>
+                    <th class="p-3">Date</th>
+                    <th class="p-3">Branch</th>
+                    <th class="p-3">Purchase</th>
+                    <th class="p-3">Expense</th>
+                    <th class="p-3">CashBalance</th>
+                    <th class="p-3">Transfer In</th>
+                    <th class="p-3">Transfer Out</th>
+                    <th class="p-3">Sales</th>
                 </tr>
             </thead>
 
-            <tbody class="divide-y">
-                {% for row in summary %}
+            <tbody>
+                {% for day in cashflow_data %}
+                {% for b in day.branches %}
+                <tr class="border-t">
+
+                    <td class="p-3">{{ day.date }}</td>
+                    <td class="p-3">{{ b.branch.name }}</td>
+
+                    <td class="p-3">₹{{ b.purchase }}</td>
+                    <td class="p-3">₹{{ b.expense }}</td>
+                    <td class="p-3">₹{{ b.cashbalance }}</td>
+
+                    <td class="p-3 text-green-600">
+                        ₹{{ b.transfer_in }}
+                    </td>
+
+                    <td class="p-3 text-red-500">
+                        ₹{{ b.transfer_out }}
+                    </td>
+
+                    <td class="p-3 font-bold text-blue-600">
+                        ₹{{ b.sales }}
+                    </td>
+
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- TRANSFER TABLE -->
+    <div class="bg-white border border-red-500 shadow-sm shadow-red-500  rounded-2xl ">
+
+        <h2 class="text-lg font-semibold p-4 border-b">
+            Transfers
+        </h2>
+
+        <table class="w-full text-sm">
+
+            <thead class="bg-gray-100">
                 <tr>
-                    <td class="px-6 py-3">{{ row.created_on__date|date:"d M Y" }}</td>
-                    <td class="px-6 py-3 font-medium">{{ row.branch__name }}</td>
+                    <th class="p-3">Date</th>
+                    <th class="p-3">From Branch</th>
+                    <th class="p-3">To Branch</th>
+                    <th class="p-3">Narration</th>
+                    <th class="p-3">Amount</th>
+                </tr>
+            </thead>
 
-                    <td class="px-6 py-3 text-right text-green-600 font-semibold">
-                        BD {{ row.sales }}
+            <tbody>
+                {% for t in transfers %}
+                <tr class="border-t">
+
+                    <td class="p-3">
+                        {{ t.created_on|date:"Y-m-d" }}
                     </td>
 
-                    <td class="px-6 py-3 text-right text-red-600 font-semibold">
-                        BD {{ row.expense }}
+                    <td class="p-3">
+                        {{ t.branch.name }}
                     </td>
 
-                    <td class="px-6 py-3 text-right text-purple-600 font-semibold">
-                        BD {{ row.purchase }}
+                    <td class="p-3">
+                        {{ t.target_branch.name }}
                     </td>
 
-                    <td class="px-6 py-3 text-right text-orange-600 font-semibold">
-                        BD {{ row.cashbalance }}
+                    {% if t.description %}
+                    <td class="p-3">
+                        {{ t.description }}
+                    </td>
+                    {% endif %}
+
+                    {% if not t.description %}
+                    <td class="p-3 text-gray-500 italic">
+                        No narration
+                    </td>
+                    {% endif %}
+
+
+                    <td class="p-3 font-medium">
+                        ₹{{ t.amount }}
                     </td>
 
-                    <td class="px-6 py-3 text-right font-bold
-                        {% if row.is_positive %} text-green-600 {% else %} text-red-600 {% endif %}">
-                        {% if row.is_positive %}
-                            BD {{ row.net_display }}
-                        {% else %}
-                            BD -{{ row.net_display }}
-                        {% endif %}
-                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center py-6 text-gray-500">
-                        No data available
-                    </td>
-                </tr>
-                {% endfor %}
-
-                <tr class="bg-yellow-200 font-bold">
-                    <td colspan="6" class="px-6 py-3">
-                        TOTAL EXPECTED SALES
-                    </td>
-                    <td class="px-6 py-3 text-right">
-                        BD {{ grand_total }}
-                    </td>
-                </tr>
-
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ================= TRANSACTION LIST ================= -->
-    <h2 class="text-xl font-semibold text-gray-800 mt-8">
-        All Transactions
-    </h2>
-
-    <div class="bg-white rounded-xl shadow border overflow-x-auto">
-        <table class="min-w-full text-sm">
-            <thead class="bg-gray-700 text-white">
-                <tr>
-                    <th class="px-6 py-3">Date</th>
-                    <th class="px-6 py-3">Branch</th>
-                    <th class="px-6 py-3">Type</th>
-                    <th class="px-6 py-3 text-right">Amount</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y">
-                {% for t in transactions %}
-                <tr>
-                    <td class="px-6 py-3">{{ t.created_on|date:"d M Y h:i A" }}</td>
-                    <td class="px-6 py-3">{{ t.branch.name }}</td>
-                    <td class="px-6 py-3">{{ t.transaction_type }}</td>
-                    <td class="px-6 py-3 text-right font-semibold">
-                        BD {{ t.amount }}
+                    <td colspan="4" class="text-center p-4 text-gray-500">
+                        No transfers found
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
+
         </table>
-    </div>
 
-    <!-- PAGINATION (PRESERVES FILTERS) -->
-    <div class="flex justify-center gap-4 mt-6">
-        {% if transactions.has_previous %}
-            <a href="?{{ query_string|cut:'page=' }}&page={{ transactions.previous_page_number }}"
-               class="px-4 py-2 border rounded">
-                Previous
-            </a>
-        {% endif %}
-
-        <span class="px-4 py-2">
-            Page {{ transactions.number }} of {{ transactions.paginator.num_pages }}
-        </span>
-
-        {% if transactions.has_next %}
-            <a href="?{{ query_string|cut:'page=' }}&page={{ transactions.next_page_number }}"
-               class="px-4 py-2 border rounded">
-                Next
-            </a>
-        {% endif %}
     </div>
 
 </div>
