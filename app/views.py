@@ -132,7 +132,7 @@ def admin_and_branch_logout(request):
 def admin_profile(request):
     current_year = now().year
 
-    total_branches = Branch.objects.count()
+    total_branches = Branch.objects.exclude(name__iexact="office").count()
     transactions = Transaction.objects.filter(created_on__year=current_year)
 
 

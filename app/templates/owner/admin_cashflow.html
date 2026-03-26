@@ -8,11 +8,11 @@
     </h1>
 
     <!-- MAIN TABLE -->
-    <div class="bg-white rounded-2xl shadow mb-10 overflow-x-auto">
+    <div class="bg-white shadow border rounded-2xl mb-10 overflow-x-auto max-h-[500px] overflow-y-auto">
 
-        <table class="w-full text-sm">
+        <table class="w-full text-sm text-center">
 
-            <thead class="bg-gray-100">
+            <thead class="bg-gray-100 sticky top-0 z-10 shadow-sm">
                 <tr>
                     <th class="p-3">Date</th>
                     <th class="p-3">Branch</th>
@@ -33,20 +33,20 @@
                     <td class="p-3">{{ day.date }}</td>
                     <td class="p-3">{{ b.branch.name }}</td>
 
-                    <td class="p-3">₹{{ b.purchase }}</td>
-                    <td class="p-3">₹{{ b.expense }}</td>
-                    <td class="p-3">₹{{ b.cashbalance }}</td>
+                    <td class="p-3">BD {{ b.purchase }}</td>
+                    <td class="p-3">BD {{ b.expense }}</td>
+                    <td class="p-3">BD {{ b.cashbalance }}</td>
 
                     <td class="p-3 text-green-600">
-                        ₹{{ b.transfer_in }}
+                        BD {{ b.transfer_in }}
                     </td>
 
                     <td class="p-3 text-red-500">
-                        ₹{{ b.transfer_out }}
+                        BD {{ b.transfer_out }}
                     </td>
 
                     <td class="p-3 font-bold text-blue-600">
-                        ₹{{ b.sales }}
+                        BD {{ b.sales }}
                     </td>
 
                 </tr>
@@ -60,15 +60,16 @@
 
 
     <!-- TRANSFER TABLE -->
-    <div class="bg-white border border-red-500 shadow-sm shadow-red-500  rounded-2xl ">
+    <div
+        class="bg-white border border-red-500 shadow-sm shadow-red-500 rounded-2xl overflow-x-auto max-h-[500px] overflow-y-auto">
 
         <h2 class="text-lg font-semibold p-4 border-b">
             Transfers
         </h2>
 
-        <table class="w-full text-sm">
+        <table class="w-full text-sm text-center">
 
-            <thead class="bg-gray-100">
+            <thead class="bg-gray-100 sticky top-0 z-10 shadow-sm">
                 <tr>
                     <th class="p-3">Date</th>
                     <th class="p-3">From Branch</th>
@@ -83,7 +84,7 @@
                 <tr class="border-t">
 
                     <td class="p-3">
-                        {{ t.created_on|date:"Y-m-d" }}
+                        {{ t.created_on|date:"F j,Y" }}
                     </td>
 
                     <td class="p-3">
@@ -98,23 +99,20 @@
                     <td class="p-3">
                         {{ t.description }}
                     </td>
-                    {% endif %}
-
-                    {% if not t.description %}
+                    {% else %}
                     <td class="p-3 text-gray-500 italic">
                         No narration
                     </td>
                     {% endif %}
 
-
                     <td class="p-3 font-medium">
-                        ₹{{ t.amount }}
+                        BD {{ t.amount }}
                     </td>
 
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center p-4 text-gray-500">
+                    <td colspan="5" class="text-center p-4 text-gray-500">
                         No transfers found
                     </td>
                 </tr>
