@@ -435,11 +435,16 @@ def Admin_cashflow(request):
 
     selected_month = int(request.GET.get("month", today.month))
     selected_year = int(request.GET.get("year", today.year))
+    selected_branch_id = request.GET.get("branch")
 
     # Month range
     _, last_day = monthrange(selected_year, selected_month)
 
     branches = Branch.objects.all().order_by("name")
+    selected_branch = None
+    if selected_branch_id:
+        selected_branch = branches.filter(id=selected_branch_id).first()
+    branches_to_show = [selected_branch] if selected_branch else branches
 
     cashflow_data = []
 
@@ -455,7 +460,7 @@ def Admin_cashflow(request):
 
         branch_data = []
 
-        for branch in branches:
+        for branch in branches_to_show:
 
             branch_tx = day_transactions.filter(branch=branch)
 
@@ -504,11 +509,15 @@ def Admin_cashflow(request):
         transaction_type="TRANSFER",
         created_on__month=selected_month,
         created_on__year=selected_year
-    ).select_related("branch", "target_branch").order_by("-created_on")
+    )
+    if selected_branch:
+        transfers = transfers.filter(Q(branch=selected_branch) | Q(target_branch=selected_branch))
+    transfers = transfers.select_related("branch", "target_branch").order_by("-created_on")
 
     context = {
         "cashflow_data": cashflow_data,
         "branches": branches,
+        "selected_branch": selected_branch,
         "transfers": transfers,
         "selected_month": selected_month,
         "selected_year": selected_year,
