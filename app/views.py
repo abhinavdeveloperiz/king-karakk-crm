@@ -17,7 +17,7 @@ from decimal import Decimal
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from datetime import date,datetime, time
+from datetime import date,datetime, time, timedelta
 import calendar
 
 
@@ -36,7 +36,7 @@ import json
 def admin_and_branch_login(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
-            return redirect("admin_dashboard")
+            return redirect("admin_profit_nd_loss")
         elif getattr(request.user, "is_branch", False):
             return redirect("branch_dashboard")
         else:
@@ -59,7 +59,7 @@ def admin_and_branch_login(request):
         login(request, user)
 
         return redirect(
-            "admin_dashboard" if user.is_superuser else "branch_dashboard"
+            "admin_profit_nd_loss" if user.is_superuser else "admin_profit_nd_loss"
         )
 
     return render(request, "auth/login.html")
@@ -187,8 +187,9 @@ def admin_profile(request):
 
 
 @login_required(login_url="login")
-def admin_dashboard(request):
-    return render(request, 'owner/admin_dashboard.html')
+def admin_profit_nd_loss(request):
+   
+    return render(request, 'owner/admin_profit_nd_loss.html')
 
 
 

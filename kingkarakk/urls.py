@@ -14,8 +14,9 @@ urlpatterns = [
     path('branch/admin/logout/', views.admin_and_branch_logout, name='logout'),
 
     path('admin/profile/', views.admin_profile, name='admin_profile'),
+    path('admin/dashboard/', views.admin_profit_nd_loss, name='admin_dashboard'),
 
-    path('', views.admin_dashboard, name='admin_dashboard'),
+    path('', views.admin_profit_nd_loss, name='admin_profit_nd_loss'),
     path('admin/daily-sales/', views.daily_sales_report, name='daily_sales_report'),
     path('admin/monthly-export/', views.export_monthly_report, name='export_monthly_report'),
     path('admin/cashflow/', views.Admin_cashflow, name='admin_cashflow'),

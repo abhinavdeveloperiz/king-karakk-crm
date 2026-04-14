@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto py-10 px-4 space-y-8">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold uppercase text-gray-900">Profit & Loss Statement</h1>
+            <p class="mt-2 text-sm text-gray-500">Dummy layout for P&L reporting with branch filter and office entry
+                summary.</p>
+        </div>
+        <form method="get" class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="branch">Branch</label>
+                    <select id="branch" name="branch" class="border rounded-lg px-3 py-2 w-full text-sm">
+                        <option value="">All Branches</option>
+                        <option value="1">Main Branch</option>
+                        <option value="2">Branch A</option>
+                        <option value="3">Branch B</option>
+                        <option value="4">Branch C</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="from_date">From Date</label>
+                    <input id="from_date" name="from_date" type="date" value="2026-04-01"
+                        class="border rounded-lg px-3 py-2 w-full text-sm" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="to_date">To Date</label>
+                    <input id="to_date" name="to_date" type="date" value="2026-04-05"
+                        class="border rounded-lg px-3 py-2 w-full text-sm" />
+                </div>
+            </div>
+            <button type="submit" class="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm self-end">Filter</button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
+            <p class="text-sm uppercase text-gray-500">Total Sales</p>
+            <p class="mt-4 text-3xl font-bold text-green-700">BD 82500.00</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
+            <p class="text-sm uppercase text-gray-500">Total Expenses</p>
+            <p class="mt-4 text-3xl font-bold text-orange-600">BD 47800.00</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
+            <p class="text-sm uppercase text-gray-500">Total Purchases</p>
+            <p class="mt-4 text-3xl font-bold text-red-600">BD 92500.00</p>
+        </div>
+    </div>
+
+    <!-- Daily Sales Table -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="px-5 py-4 uppercase tracking-wide">Date</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Daily Sales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">Apr 1, 2026</td>
+                        <td class="px-5 py-4">BD 15,000.00</td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">Apr 2, 2026</td>
+                        <td class="px-5 py-4">BD 18,500.00</td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">Apr 3, 2026</td>
+                        <td class="px-5 py-4">BD 12,200.00</td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">Apr 4, 2026</td>
+                        <td class="px-5 py-4">BD 20,000.00</td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">Apr 5, 2026</td>
+                        <td class="px-5 py-4">BD 16,800.00</td>
+                    </tr>
+                    <tr class="bg-gray-50 font-semibold text-gray-800">
+                        <td class="px-5 py-4">Average Sales per Day</td>
+                        <td class="px-5 py-4">BD 16500.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Purchases</div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-100 border-b">
+                        <tr>
+                            <th class="px-5 py-4">Date</th>
+                            <th class="px-5 py-4">Item</th>
+                            <th class="px-5 py-4">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">04-11-25</td>
+                            <td class="px-5 py-4">Rainbow Milk</td>
+                            <td class="px-5 py-4">BD 3,200</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">05-11-25</td>
+                            <td class="px-5 py-4">Cardomom</td>
+                            <td class="px-5 py-4">BD 1,750</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">06-11-25</td>
+                            <td class="px-5 py-4">King Pack</td>
+                            <td class="px-5 py-4">BD 2,900</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">08-11-25</td>
+                            <td class="px-5 py-4">Talaal Souq</td>
+                            <td class="px-5 py-4">BD 600</td>
+                        </tr>
+                        <tr class="bg-gray-50 font-semibold text-gray-800">
+                            <td class="px-5 py-4">Total</td>
+                            <td class="px-5 py-4"></td>
+                            <td class="px-5 py-4">BD 92,500</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-4 border-t bg-gray-50 text-sm text-gray-700">
+                Total purchase is <span class="font-semibold">BD 92500.00</span> — <span
+                    class="font-semibold">51.4%</span> of total
+                sales.
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+            <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Expenses</div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-100 border-b">
+                        <tr>
+                            <th class="px-5 py-4">Date</th>
+                            <th class="px-5 py-4">Expense</th>
+                            <th class="px-5 py-4">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">19-11-25</td>
+                            <td class="px-5 py-4">Shop Rent</td>
+                            <td class="px-5 py-4">BD 15,000</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">20-11-25</td>
+                            <td class="px-5 py-4">Salary</td>
+                            <td class="px-5 py-4">BD 22,000</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">22-11-25</td>
+                            <td class="px-5 py-4">Staff Room Rent</td>
+                            <td class="px-5 py-4">BD 4,500</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">25-11-25</td>
+                            <td class="px-5 py-4">Mobile Bill</td>
+                            <td class="px-5 py-4">BD 1,200</td>
+                        </tr>
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-5 py-4">28-11-25</td>
+                            <td class="px-5 py-4">Sales Commission</td>
+                            <td class="px-5 py-4">BD 3,100</td>
+                        </tr>
+                        <tr class="bg-gray-50 font-semibold text-gray-800">
+                            <td class="px-5 py-4">Total</td>
+                            <td class="px-5 py-4"></td>
+                            <td class="px-5 py-4">BD 47,800</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-red-50 rounded-2xl shadow-lg overflow-hidden border border-red-200">
+        <div class="px-5 py-4 bg-red-500 text-white font-semibold text-lg">Entry from Office</div>
+        <div class="overflow-x-auto bg-white">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-red-100 border-b border-red-200">
+                    <tr>
+                        <th class="px-5 py-4 text-red-800">Sale</th>
+                        <th class="px-5 py-4 text-red-800">Amount</th>
+                        <th class="px-5 py-4 text-red-800">Purchase / Expenses</th>
+                        <th class="px-5 py-4 text-red-800">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b hover:bg-red-50">
+                        <td class="px-5 py-4">Talabat Sale</td>
+                        <td class="px-5 py-4">BD 8,500</td>
+                        <td class="px-5 py-4">King Pack (Credit)</td>
+                        <td class="px-5 py-4">BD 2,700</td>
+                    </tr>
+                    <tr class="border-b hover:bg-red-50">
+                        <td class="px-5 py-4">Keeta Sale</td>
+                        <td class="px-5 py-4">BD 6,800</td>
+                        <td class="px-5 py-4">Talaal Souq (Credit)</td>
+                        <td class="px-5 py-4">BD 1,900</td>
+                    </tr>
+                    <tr class="border-b hover:bg-red-50">
+                        <td class="px-5 py-4">Total Office Sale</td>
+                        <td class="px-5 py-4">BD 15,300</td>
+                        <td class="px-5 py-4">Any Other Expenses</td>
+                        <td class="px-5 py-4">BD 1,250</td>
+                    </tr>
+                    <tr class="bg-red-100 font-semibold text-red-900">
+                        <td class="px-5 py-4">Working Partnership</td>
+                        <td class="px-5 py-4">BD 1,530</td>
+                        <td class="px-5 py-4"></td>
+                        <td class="px-5 py-4"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
