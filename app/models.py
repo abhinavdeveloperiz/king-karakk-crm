@@ -18,7 +18,8 @@ class Branch(models.Model):
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="branch_account")
-
+    working_partnership = models.DecimalField(max_digits=5,  decimal_places=2,help_text="Enter percentage like 2.50 for 2.5%")
+    
     def __str__(self):
         return self.name
     

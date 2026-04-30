@@ -9,6 +9,11 @@ class BranchCreateForm(forms.Form):
     location = forms.CharField(max_length=255)
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
+    working_partnership = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Enter percentage like 2.50 for 2.5%"
+    )
 
     def clean_username(self):
         username = self.cleaned_data["username"]
@@ -31,7 +36,8 @@ class BranchCreateForm(forms.Form):
         branch = Branch.objects.create(
             name=name,
             location=location,
-            user=user
+            user=user,
+            working_partnership=self.cleaned_data["working_partnership"]
         )
 
         return branch
@@ -42,7 +48,12 @@ class BranchEditForm(forms.Form):
     location = forms.CharField(max_length=255)
     username = forms.CharField(max_length=150)
     password = forms.CharField(required=False, widget=forms.PasswordInput)
-
+    working_partnership = forms.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        required=False,
+        help_text="Enter percentage like 2.50 for 2.5%"
+    )
 
 
 

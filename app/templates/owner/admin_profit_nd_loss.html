@@ -6,183 +6,200 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold uppercase text-gray-900">Profit & Loss Statement</h1>
-            <p class="mt-2 text-sm text-gray-500">Dummy layout for P&L reporting with branch filter and office entry
-                summary.</p>
+            <p class="mt-2 text-sm text-gray-500">Annual P&L report with purchase, expense and office entry details.</p>
         </div>
-        <form method="get" class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1" for="branch">Branch</label>
-                    <select id="branch" name="branch" class="border rounded-lg px-3 py-2 w-full text-sm">
-                        <option value="">All Branches</option>
-                        <option value="1">Main Branch</option>
-                        <option value="2">Branch A</option>
-                        <option value="3">Branch B</option>
-                        <option value="4">Branch C</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1" for="from_date">From Date</label>
-                    <input id="from_date" name="from_date" type="date" value="2026-04-01"
-                        class="border rounded-lg px-3 py-2 w-full text-sm" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1" for="to_date">To Date</label>
-                    <input id="to_date" name="to_date" type="date" value="2026-04-05"
-                        class="border rounded-lg px-3 py-2 w-full text-sm" />
-                </div>
-            </div>
-            <button type="submit" class="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm self-end">Filter</button>
-        </form>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
             <p class="text-sm uppercase text-gray-500">Total Sales</p>
-            <p class="mt-4 text-3xl font-bold text-green-700">BD 82500.00</p>
+            <p class="mt-4 text-3xl font-bold text-green-700">BD {{ total_sales|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
             <p class="text-sm uppercase text-gray-500">Total Expenses</p>
-            <p class="mt-4 text-3xl font-bold text-orange-600">BD 47800.00</p>
+            <p class="mt-4 text-3xl font-bold text-orange-600">BD {{ total_expense|floatformat:2 }}</p>
         </div>
         <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
             <p class="text-sm uppercase text-gray-500">Total Purchases</p>
-            <p class="mt-4 text-3xl font-bold text-red-600">BD 92500.00</p>
+            <p class="mt-4 text-3xl font-bold text-red-600">BD {{ total_purchase|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
+            <p class="text-sm uppercase text-gray-500">Profit</p>
+            <p class="mt-4 text-3xl font-bold {% if profit > 0 %}text-blue-700{% else %}text-red-700{% endif %}">BD {{
+                profit|floatformat:2 }}</p>
         </div>
     </div>
 
-    <!-- Daily Sales Table -->
+    <!-- Sales by Branch Table -->
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Sales by Branch (Daily)</div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm text-left">
                 <thead class="bg-gray-100 border-b">
                     <tr>
                         <th class="px-5 py-4 uppercase tracking-wide">Date</th>
-                        <th class="px-5 py-4 uppercase tracking-wide">Daily Sales</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Branch</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Cash Balance</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Purchase</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Expense</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Sales</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Partnership %</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Partnership Deduction</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Adjusted Sales</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for item in daily_branch_breakdown %}
                     <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4">Apr 1, 2026</td>
-                        <td class="px-5 py-4">BD 15,000.00</td>
+                        <td class="px-5 py-4">{{ item.date|date:"M d, Y" }}</td>
+                        <td class="px-5 py-4 font-semibold">{{ item.branch.name }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ item.cashbalance|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ item.purchase|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ item.expense|floatformat:2 }}</td>
+                        <td
+                            class="px-5 py-4 text-right font-semibold {% if item.sales > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            BD {{ item.sales|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">{{ item.partnership_percentage|floatformat:2 }}%</td>
+                        <td class="px-5 py-4 text-right text-orange-600 font-semibold">BD {{
+                            item.partnership_deduction|floatformat:2 }}</td>
+                        <td
+                            class="px-5 py-4 text-right font-bold {% if item.adjusted_sales > 0 %}text-blue-600{% else %}text-red-600{% endif %}">
+                            BD {{ item.adjusted_sales|floatformat:2 }}</td>
                     </tr>
+                    {% empty %}
                     <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4">Apr 2, 2026</td>
-                        <td class="px-5 py-4">BD 18,500.00</td>
+                        <td class="px-5 py-4 text-gray-500 text-center" colspan="9">No branch data available</td>
                     </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4">Apr 3, 2026</td>
-                        <td class="px-5 py-4">BD 12,200.00</td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4">Apr 4, 2026</td>
-                        <td class="px-5 py-4">BD 20,000.00</td>
-                    </tr>
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4">Apr 5, 2026</td>
-                        <td class="px-5 py-4">BD 16,800.00</td>
-                    </tr>
+                    {% endfor %}
                     <tr class="bg-gray-50 font-semibold text-gray-800">
-                        <td class="px-5 py-4">Average Sales per Day</td>
-                        <td class="px-5 py-4">BD 16500.00</td>
+                        <td class="px-5 py-4" colspan="2">Total</td>
+                        <td class="px-5 py-4 text-right">BD {{ total_cashbalance|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ total_purchase|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ total_expense|floatformat:2 }}</td>
+                        <td
+                            class="px-5 py-4 text-right {% if total_sales > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            BD {{ total_sales|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">-</td>
+                        <td class="px-5 py-4 text-right text-orange-600 font-semibold">BD {{
+                            total_monthly_partnership_deduction|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">-</td>
+                    </tr>
+                    <tr class="bg-blue-50 font-semibold text-blue-800">
+                        <td class="px-5 py-4" colspan="2">Avg Monthly Sales</td>
+                        <td class="px-5 py-4 text-right">-</td>
+                        <td class="px-5 py-4 text-right">-</td>
+                        <td class="px-5 py-4 text-right">-</td>
+                        <td class="px-5 py-4 text-right text-blue-600">BD {{ avg_monthly_sales|floatformat:2 }}</td>
+                        <td class="px-5 py-4 text-right">-</td>
+                        <td class="px-5 py-4 text-right">-</td>
+                        <td class="px-5 py-4 text-right">-</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-            <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Purchases</div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-left">
-                    <thead class="bg-gray-100 border-b">
-                        <tr>
-                            <th class="px-5 py-4">Date</th>
-                            <th class="px-5 py-4">Item</th>
-                            <th class="px-5 py-4">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">04-11-25</td>
-                            <td class="px-5 py-4">Rainbow Milk</td>
-                            <td class="px-5 py-4">BD 3,200</td>
-                        </tr>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">05-11-25</td>
-                            <td class="px-5 py-4">Cardomom</td>
-                            <td class="px-5 py-4">BD 1,750</td>
-                        </tr>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">06-11-25</td>
-                            <td class="px-5 py-4">King Pack</td>
-                            <td class="px-5 py-4">BD 2,900</td>
-                        </tr>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">08-11-25</td>
-                            <td class="px-5 py-4">Talaal Souq</td>
-                            <td class="px-5 py-4">BD 600</td>
-                        </tr>
-                        <tr class="bg-gray-50 font-semibold text-gray-800">
-                            <td class="px-5 py-4">Total</td>
-                            <td class="px-5 py-4"></td>
-                            <td class="px-5 py-4">BD 92,500</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="px-5 py-4 border-t bg-gray-50 text-sm text-gray-700">
-                Total purchase is <span class="font-semibold">BD 92500.00</span> — <span
-                    class="font-semibold">51.4%</span> of total
-                sales.
+    <!-- Sales Transactions Table -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Sale Transactions</div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="px-5 py-4 uppercase tracking-wide">Date</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Branch</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Description</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales_transactions %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">{{ sale.created_on|date:"M d, Y H:i" }}</td>
+                        <td class="px-5 py-4 font-semibold">{{ sale.branch.name }}</td>
+                        <td class="px-5 py-4">{{ sale.description|default:"N/A" }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ sale.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4 text-gray-500 text-center" colspan="4">No sale transactions recorded</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Purchases Table -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Purchases</div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="px-5 py-4 uppercase tracking-wide">Date</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Category</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Description</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">{{ purchase.created_on|date:"M d, Y" }}</td>
+                        <td class="px-5 py-4">{{ purchase.get_purchase_category_display|default:"N/A" }}</td>
+                        <td class="px-5 py-4">{{ purchase.description|default:"N/A" }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ purchase.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4 text-gray-500 text-center" colspan="4">No purchases recorded</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-5 py-4 border-t bg-gray-50">
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-800">Total Purchases</span>
+                <span class="font-semibold">BD {{ total_purchase|floatformat:2 }}</span>
             </div>
         </div>
+    </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-            <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Expenses</div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-left">
-                    <thead class="bg-gray-100 border-b">
-                        <tr>
-                            <th class="px-5 py-4">Date</th>
-                            <th class="px-5 py-4">Expense</th>
-                            <th class="px-5 py-4">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">19-11-25</td>
-                            <td class="px-5 py-4">Shop Rent</td>
-                            <td class="px-5 py-4">BD 15,000</td>
-                        </tr>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">20-11-25</td>
-                            <td class="px-5 py-4">Salary</td>
-                            <td class="px-5 py-4">BD 22,000</td>
-                        </tr>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">22-11-25</td>
-                            <td class="px-5 py-4">Staff Room Rent</td>
-                            <td class="px-5 py-4">BD 4,500</td>
-                        </tr>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">25-11-25</td>
-                            <td class="px-5 py-4">Mobile Bill</td>
-                            <td class="px-5 py-4">BD 1,200</td>
-                        </tr>
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-5 py-4">28-11-25</td>
-                            <td class="px-5 py-4">Sales Commission</td>
-                            <td class="px-5 py-4">BD 3,100</td>
-                        </tr>
-                        <tr class="bg-gray-50 font-semibold text-gray-800">
-                            <td class="px-5 py-4">Total</td>
-                            <td class="px-5 py-4"></td>
-                            <td class="px-5 py-4">BD 47,800</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!-- Expenses Table -->
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Expenses</div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-100 border-b">
+                    <tr>
+                        <th class="px-5 py-4 uppercase tracking-wide">Date</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Category</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Description</th>
+                        <th class="px-5 py-4 uppercase tracking-wide text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4">{{ expense.created_on|date:"M d, Y" }}</td>
+                        <td class="px-5 py-4">{{ expense.get_expense_category_display|default:"N/A" }}</td>
+                        <td class="px-5 py-4">{{ expense.description|default:"N/A" }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ expense.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-5 py-4 text-gray-500 text-center" colspan="4">No expenses recorded</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="px-5 py-4 border-t bg-gray-50">
+            <div class="flex justify-between">
+                <span class="font-semibold text-gray-800">Total Expenses</span>
+                <span class="font-semibold">BD {{ total_expense|floatformat:2 }}</span>
             </div>
         </div>
     </div>
@@ -193,37 +210,37 @@
             <table class="min-w-full text-sm text-left">
                 <thead class="bg-red-100 border-b border-red-200">
                     <tr>
-                        <th class="px-5 py-4 text-red-800">Sale</th>
-                        <th class="px-5 py-4 text-red-800">Amount</th>
-                        <th class="px-5 py-4 text-red-800">Purchase / Expenses</th>
-                        <th class="px-5 py-4 text-red-800">Amount</th>
+                        <th class="px-5 py-4 text-red-800">Date</th>
+                        <th class="px-5 py-4 text-red-800">Type</th>
+                        <th class="px-5 py-4 text-red-800">Category</th>
+                        <th class="px-5 py-4 text-red-800">Description</th>
+                        <th class="px-5 py-4 text-red-800 text-right">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for entry in office_entries %}
                     <tr class="border-b hover:bg-red-50">
-                        <td class="px-5 py-4">Talabat Sale</td>
-                        <td class="px-5 py-4">BD 8,500</td>
-                        <td class="px-5 py-4">King Pack (Credit)</td>
-                        <td class="px-5 py-4">BD 2,700</td>
+                        <td class="px-5 py-4">{{ entry.created_on|date:"M d, Y" }}</td>
+                        <td class="px-5 py-4 font-semibold">{{ entry.get_transaction_type_display }}</td>
+                        <td class="px-5 py-4">
+                            {% if entry.transaction_type == 'PURCHASE' %}
+                            {{ entry.get_purchase_category_display|default:"N/A" }}
+                            {% elif entry.transaction_type == 'EXPENSE' %}
+                            {{ entry.get_expense_category_display|default:"N/A" }}
+                            {% elif entry.transaction_type == 'SALE' %}
+                            Sale
+                            {% else %}
+                            {{ entry.transaction_type }}
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-4">{{ entry.description|default:"N/A" }}</td>
+                        <td class="px-5 py-4 text-right">BD {{ entry.amount|floatformat:2 }}</td>
                     </tr>
+                    {% empty %}
                     <tr class="border-b hover:bg-red-50">
-                        <td class="px-5 py-4">Keeta Sale</td>
-                        <td class="px-5 py-4">BD 6,800</td>
-                        <td class="px-5 py-4">Talaal Souq (Credit)</td>
-                        <td class="px-5 py-4">BD 1,900</td>
+                        <td class="px-5 py-4 text-gray-500 text-center" colspan="5">No office entries recorded</td>
                     </tr>
-                    <tr class="border-b hover:bg-red-50">
-                        <td class="px-5 py-4">Total Office Sale</td>
-                        <td class="px-5 py-4">BD 15,300</td>
-                        <td class="px-5 py-4">Any Other Expenses</td>
-                        <td class="px-5 py-4">BD 1,250</td>
-                    </tr>
-                    <tr class="bg-red-100 font-semibold text-red-900">
-                        <td class="px-5 py-4">Working Partnership</td>
-                        <td class="px-5 py-4">BD 1,530</td>
-                        <td class="px-5 py-4"></td>
-                        <td class="px-5 py-4"></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
