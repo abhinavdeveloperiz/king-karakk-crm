@@ -289,6 +289,9 @@ def admin_profit_nd_loss(request):
                     "adjusted_sales": adjusted_sales,
                 })
     
+    # Calculate total adjusted sales for the month
+    total_adjusted_sales = sum(item["adjusted_sales"] for item in daily_branch_breakdown)
+    
     # Overall branch totals (for reference)
     branch_breakdown = []
     for branch in branches:
@@ -371,6 +374,7 @@ def admin_profit_nd_loss(request):
         "branch_breakdown": branch_breakdown,
         "office_entries": office_entries,
         "total_monthly_partnership_deduction": total_monthly_partnership_deduction,
+        "total_adjusted_sales": total_adjusted_sales,
     }
 
     return render(request, "owner/admin_profit_nd_loss.html", context)
