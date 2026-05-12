@@ -191,16 +191,18 @@ def admin_profile(request):
 @login_required(login_url="login")
 def admin_profit_nd_loss(request):
     today = timezone.localtime()
-    selected_year = int(request.GET.get("year", today.year))
+    current_year = today.year
+    current_month = today.month
+    current_month_name = calendar.month_name[current_month]
 
-    # Get all transactions for the year (excluding office branch for regular totals)
     transactions_all = Transaction.objects.filter(
-        created_on__year=selected_year
+        created_on__year=current_year,
+        created_on__month=current_month,
     ).exclude(branch__name__iexact="office")
     
-    # Get office branch transactions separately
     office_transactions = Transaction.objects.filter(
-        created_on__year=selected_year,
+        created_on__year=current_year,
+        created_on__month=current_month,
         branch__name__iexact="office"
     )
 
@@ -229,8 +231,8 @@ def admin_profit_nd_loss(request):
     # Get detailed expense list
     expenses = transactions_all.filter(transaction_type="EXPENSE").order_by('-created_on')
 
-    # Get SALE transactions
-    sales_transactions = transactions_all.filter(transaction_type="SALE").order_by('-created_on')
+    # Get SALE and TRANSFER transactions
+    sales_transactions = transactions_all.filter(transaction_type__in=["SALE", "TRANSFER"]).order_by('-created_on')
 
     # Get office entry transactions (all types from office branch)
     office_entries = office_transactions.order_by('-created_on')
@@ -266,9 +268,12 @@ def admin_profit_nd_loss(request):
                 total=Sum("amount", default=Decimal("0.00"))
             )["total"] or Decimal("0.00")
             
+            day_transfers = day_txns.filter(transaction_type="TRANSFER").aggregate(
+                total=Sum("amount", default=Decimal("0.00"))
+            )["total"] or Decimal("0.00")
+            
             day_sales = day_cashbalance - day_purchase - day_expense
             
-            # Calculate partnership deduction
             partnership_percentage = branch.working_partnership or Decimal("0.00")
             partnership_deduction = (day_sales * partnership_percentage) / Decimal("100.00")
             adjusted_sales = day_sales - partnership_deduction
@@ -284,6 +289,7 @@ def admin_profit_nd_loss(request):
                     "purchase": day_purchase,
                     "expense": day_expense,
                     "cashbalance": day_cashbalance,
+                    "transfers": day_transfers,
                     "partnership_percentage": partnership_percentage,
                     "partnership_deduction": partnership_deduction,
                     "adjusted_sales": adjusted_sales,
@@ -291,6 +297,13 @@ def admin_profit_nd_loss(request):
     
     # Calculate total adjusted sales for the month
     total_adjusted_sales = sum(item["adjusted_sales"] for item in daily_branch_breakdown)
+    
+    # Calculate total transfers for the month
+    total_transfers = sum(item["transfers"] for item in daily_branch_breakdown)
+    
+    # Calculate average cash balance per branch
+    num_branches = branches.count()
+    avg_cash_balance_per_branch = cashbalance / num_branches if num_branches > 0 else Decimal("0.00")
     
     # Overall branch totals (for reference)
     branch_breakdown = []
@@ -319,49 +332,20 @@ def admin_profit_nd_loss(request):
             "cashbalance": branch_cashbalance,
         })
 
-    # Monthly breakdown
     monthly_data = []
-    for month in range(1, 13):
-        _, last_day = calendar.monthrange(selected_year, month)
-        start_date = date(selected_year, month, 1)
-        end_date = date(selected_year, month, last_day)
-
-        month_txns = transactions_all.filter(created_on__date__range=(start_date, end_date))
-
-        month_purchase = month_txns.filter(transaction_type="PURCHASE").aggregate(
-            total=Sum("amount", default=Decimal("0.00"))
-        )["total"] or Decimal("0.00")
-
-        month_expense = month_txns.filter(transaction_type="EXPENSE").aggregate(
-            total=Sum("amount", default=Decimal("0.00"))
-        )["total"] or Decimal("0.00")
-
-        month_cashbalance = month_txns.filter(transaction_type="CASHBALANCE").aggregate(
-            total=Sum("amount", default=Decimal("0.00"))
-        )["total"] or Decimal("0.00")
-
-        month_sales = month_cashbalance - month_purchase - month_expense
-        month_avg = month_sales / last_day if last_day > 0 else Decimal("0.00")
-
-        monthly_data.append({
-            "month": calendar.month_name[month],
-            "purchase": month_purchase,
-            "expense": month_expense,
-            "cashbalance": month_cashbalance,
-            "total_sales": month_sales,
-            "avg_sales": month_avg,
-        })
 
     year_total = total_sales
 
-    # Calculate average monthly sales
-    avg_monthly_sales = total_sales / 12 if total_sales > 0 else Decimal("0.00")
+    # Calculate average daily sales for the current month
+    days_in_month = calendar.monthrange(current_year, current_month)[1]
+    avg_daily_sales = total_sales / days_in_month if days_in_month > 0 else Decimal("0.00")
 
     context = {
         "monthly_data": monthly_data,
-        "year": selected_year,
+        "year": current_year,
+        "month_name": current_month_name,
         "year_total": year_total,
-        "avg_monthly_sales": avg_monthly_sales,
+        "avg_daily_sales": avg_daily_sales,
         "total_sales": total_sales,
         "total_purchase": purchase,
         "total_expense": expense,
@@ -375,6 +359,8 @@ def admin_profit_nd_loss(request):
         "office_entries": office_entries,
         "total_monthly_partnership_deduction": total_monthly_partnership_deduction,
         "total_adjusted_sales": total_adjusted_sales,
+        "total_transfers": total_transfers,
+        "avg_cash_balance_per_branch": avg_cash_balance_per_branch,
     }
 
     return render(request, "owner/admin_profit_nd_loss.html", context)
@@ -758,6 +744,9 @@ def branch_edit(request, branch_id):
             # Update branch
             branch.name = form.cleaned_data["name"]
             branch.location = form.cleaned_data["location"]
+            working_partnership = form.cleaned_data.get("working_partnership")
+            if working_partnership is not None:
+                branch.working_partnership = working_partnership
             branch.save()
             messages.success(request, f"Branch {branch.name} Updated")
             return redirect("branch_list")
@@ -769,6 +758,7 @@ def branch_edit(request, branch_id):
             "name": branch.name,
             "location": branch.location,
             "username": user.username,
+            "working_partnership": branch.working_partnership,
         })
 
     return render(request, "owner/admin_branch_edit.html", {

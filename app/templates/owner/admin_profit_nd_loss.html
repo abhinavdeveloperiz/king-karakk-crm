@@ -5,120 +5,411 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl sm:text-3xl font-bold uppercase text-gray-900">Profit & Loss Statement</h1>
-            <p class="mt-2 text-sm text-gray-500">Annual P&L report with purchase, expense and office entry details.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold uppercase text-gray-900">Current Month Profit & Loss</h1>
+            <p class="mt-2 text-sm text-gray-500">Current month P&amp;L report for {{ month_name }}, {{ year }} with
+                purchase, expense and office entry details.</p>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
-            <p class="text-sm uppercase text-gray-500">Total Sales</p>
-            <p class="mt-4 text-3xl font-bold text-green-700">BD {{ total_sales|floatformat:2 }}</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+        <!-- TOTAL SALES -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50/6 0 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+            <div class="flex items-start justify-between">
+
+                <div>
+
+                    <p class="text-xs font-semibold uppercase tracking-[2px] text-slate-500">
+                        Total Sales
+                    </p>
+
+                    <h2 class="mt-4 text-2xl  font-black tracking-tight text-slate-800">
+                        BD {{ total_cashbalance|floatformat:2 }}
+                    </h2>
+
+                </div>
+
+                <!-- ICON -->
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 shadow-inner">
+
+                    <i data-lucide="badge-dollar-sign" class="w-7 h-7 text-emerald-600 stroke-[2.2]"></i>
+
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex items-center gap-2">
+
+                <div class="h-2 w-2 rounded-full bg-emerald-500"></div>
+
+                <p class="text-sm font-medium text-slate-600">
+                    Revenue Generated
+                </p>
+
+            </div>
+
         </div>
-        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
-            <p class="text-sm uppercase text-gray-500">Total Expenses</p>
-            <p class="mt-4 text-3xl font-bold text-orange-600">BD {{ total_expense|floatformat:2 }}</p>
+
+        <!-- TOTAL EXPENSES -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-orange-100 bg-gradient-to-br from-white to-orange-50/60 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+            <div class="flex items-start justify-between">
+
+                <div>
+
+                    <p class="text-xs font-semibold uppercase tracking-[2px] text-slate-500">
+                        Total Expenses
+                    </p>
+
+                    <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-800">
+                        BD {{ total_expense|floatformat:2 }}
+                    </h2>
+
+                </div>
+
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 shadow-inner">
+
+                    <i data-lucide="receipt-text" class="w-7 h-7 text-orange-500 stroke-[2.2]"></i>
+
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex items-center gap-2">
+
+                <div class="h-2 w-2 rounded-full bg-orange-500"></div>
+
+                <p class="text-sm font-medium text-slate-600">
+                    Operational Expenses
+                </p>
+
+            </div>
+
         </div>
-        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
-            <p class="text-sm uppercase text-gray-500">Total Purchases</p>
-            <p class="mt-4 text-3xl font-bold text-red-600">BD {{ total_purchase|floatformat:2 }}</p>
+
+        <!-- TOTAL PURCHASES -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-rose-100 bg-gradient-to-br from-white to-rose-50/60 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+            <div class="flex items-start justify-between">
+
+                <div>
+
+                    <p class="text-xs font-semibold uppercase tracking-[2px] text-slate-500">
+                        Total Purchases
+                    </p>
+
+                    <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-800">
+                        BD {{ total_purchase|floatformat:2 }}
+                    </h2>
+
+                </div>
+
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 shadow-inner">
+
+                    <i data-lucide="shopping-cart" class="w-7 h-7 text-rose-500 stroke-[2.2]"></i>
+
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex items-center gap-2">
+
+                <div class="h-2 w-2 rounded-full bg-rose-500"></div>
+
+                <p class="text-sm font-medium text-slate-600">
+                    Inventory Purchases
+                </p>
+
+            </div>
+
         </div>
-        <div class="bg-white rounded-2xl shadow p-6 border border-gray-200">
-            <p class="text-sm uppercase text-gray-500">Profit</p>
-            <p class="mt-4 text-3xl font-bold {% if profit > 0 %}text-blue-700{% else %}text-red-700{% endif %}">BD {{
-                profit|floatformat:2 }}</p>
+
+        <!-- PROFIT -->
+        <div
+            class="group relative overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-br from-white to-blue-50/60 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+            <div class="flex items-start justify-between">
+
+                <div>
+
+                    <p class="text-xs font-semibold uppercase tracking-[2px] text-slate-500">
+                        Net Profit
+                    </p>
+
+                    <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-800">
+                        BD {{ profit|floatformat:2 }}
+                    </h2>
+
+                </div>
+
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 shadow-inner">
+
+                    <i data-lucide="chart-column-big" class="w-7 h-7 text-blue-600 stroke-[2.2]"></i>
+
+                </div>
+
+            </div>
+
+            <div class="mt-6 flex items-center gap-2">
+
+                <div class="h-2 w-2 rounded-full {% if profit > 0 %}bg-green-500{% else %}bg-red-500{% endif %}">
+                </div>
+
+                <p class="text-sm font-medium text-slate-600">
+
+                    {% if profit > 0 %}
+                    Positive Financial Growth
+                    {% else %}
+                    Financial Loss Recorded
+                    {% endif %}
+
+                </p>
+
+            </div>
+
         </div>
+
     </div>
+
+
 
     <!-- Sales by Branch Table -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Sales by Branch (Daily)</div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left">
-                <thead class="bg-gray-100 border-b">
-                    <tr>
-                        <th class="px-5 py-4 uppercase tracking-wide">Date</th>
-                        <th class="px-5 py-4 uppercase tracking-wide">Branch</th>
-                        <th class="px-5 py-4 uppercase tracking-wide text-right">Cash Balance</th>
-                        <th class="px-5 py-4 uppercase tracking-wide text-right">Purchase</th>
-                        <th class="px-5 py-4 uppercase tracking-wide text-right">Expense</th>
-                        <th class="px-5 py-4 uppercase tracking-wide text-right">Sales</th>
-                        <th class="px-5 py-4 uppercase tracking-wide text-right">Partnership %</th>
-                        <th class="px-5 py-4 uppercase tracking-wide text-right">Partnership Deduction</th>
-                        <th class="px-5 py-4 uppercase tracking-wide text-right">Adjusted Sales</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in daily_branch_breakdown %}
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4">{{ item.date|date:"M d, Y" }}</td>
-                        <td class="px-5 py-4 font-semibold">{{ item.branch.name }}</td>
-                        <td class="px-5 py-4 text-right">BD {{ item.cashbalance|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">BD {{ item.purchase|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">BD {{ item.expense|floatformat:2 }}</td>
-                        <td
-                            class="px-5 py-4 text-right font-semibold {% if item.sales > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                            BD {{ item.sales|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">{{ item.partnership_percentage|floatformat:2 }}%</td>
-                        <td class="px-5 py-4 text-right text-orange-600 font-semibold">BD {{
-                            item.partnership_deduction|floatformat:2 }}</td>
-                        <td
-                            class="px-5 py-4 text-right font-bold {% if item.adjusted_sales > 0 %}text-blue-600{% else %}text-red-600{% endif %}">
-                            BD {{ item.adjusted_sales|floatformat:2 }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4 text-gray-500 text-center" colspan="9">No branch data available</td>
-                    </tr>
-                    {% endfor %}
-                    <tr class="bg-gray-50 font-semibold text-gray-800">
-                        <td class="px-5 py-4" colspan="2">Total</td>
-                        <td class="px-5 py-4 text-right">BD {{ total_cashbalance|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">BD {{ total_purchase|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">BD {{ total_expense|floatformat:2 }}</td>
-                        <td
-                            class="px-5 py-4 text-right {% if total_sales > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                            BD {{ total_sales|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right text-orange-600 font-semibold">BD {{
-                            total_monthly_partnership_deduction|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                    </tr>
-                    <tr class="bg-purple-50 font-semibold text-purple-800">
-                        <td class="px-5 py-4" colspan="2">Total Adjusted Sales</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right text-purple-600">BD {{ total_adjusted_sales|floatformat:2 }}
-                        </td>
-                    </tr>
-                    <tr class="bg-blue-50 font-semibold text-blue-800">
-                        <td class="px-5 py-4" colspan="2">Avg Monthly Sales</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right text-blue-600">BD {{ avg_monthly_sales|floatformat:2 }}</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                        <td class="px-5 py-4 text-right">-</td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-200">
+
+        <!-- HEADER -->
+        <div class="px-6 py-5 border-b border-slate-200 bg-slate-50">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-800">
+                Sales by Branch (Daily)
+            </h2>
         </div>
+
+        <!-- TABLE -->
+        <div class="overflow-x-auto">
+
+            <table class="min-w-[1350px] w-full text-sm border-collapse">
+
+                <!-- TABLE HEAD -->
+                <thead class="bg-slate-100 border-b border-slate-200">
+
+                    <tr class="text-slate-700">
+
+                        <th class="px-6 py-4 text-left font-bold uppercase tracking-wide whitespace-nowrap">
+                            Date
+                        </th>
+
+                        <th class="px-6 py-4 text-left font-bold uppercase tracking-wide whitespace-nowrap">
+                            Branch
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Cash Balance
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Purchase
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Expense
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Transfers
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Sales
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Partnership %
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Partnership Deduction
+                        </th>
+
+                        <th class="px-6 py-4 text-right font-bold uppercase tracking-wide whitespace-nowrap">
+                            Adjusted Sales
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <!-- TABLE BODY -->
+                <tbody class="divide-y divide-slate-100">
+
+                    {% for item in daily_branch_breakdown %}
+
+                    <tr class="hover:bg-slate-50 transition-all duration-200">
+
+                        <!-- DATE -->
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-700 align-middle">
+                            {{ item.date|date:"M d, Y" }}
+                        </td>
+
+                        <!-- BRANCH -->
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold text-slate-800 align-middle">
+                            {{ item.branch.name }}
+                        </td>
+
+                        <!-- CASH -->
+                        <td
+                            class="px-6 py-4 text-right whitespace-nowrap font-medium text-slate-700 align-middle tabular-nums">
+                            BD {{ item.cashbalance|floatformat:2 }}
+                        </td>
+
+                        <!-- PURCHASE -->
+                        <td
+                            class="px-6 py-4 text-right whitespace-nowrap font-medium text-slate-700 align-middle tabular-nums">
+                            BD {{ item.purchase|floatformat:2 }}
+                        </td>
+
+                        <!-- EXPENSE -->
+                        <td
+                            class="px-6 py-4 text-right whitespace-nowrap font-medium text-slate-700 align-middle tabular-nums">
+                            BD {{ item.expense|floatformat:2 }}
+                        </td>
+
+                        <!-- TRANSFERS -->
+                        <td
+                            class="px-6 py-4 text-right whitespace-nowrap font-medium text-slate-700 align-middle tabular-nums">
+                            BD {{ item.transfers|floatformat:2 }}
+                        </td>
+
+                        <!-- SALES -->
+                        <td
+                            class="px-6 py-4 text-right whitespace-nowrap font-bold text-slate-800 align-middle tabular-nums">
+                            BD {{ item.sales|floatformat:2 }}
+                        </td>
+
+                        <!-- PERCENTAGE -->
+                        <td class="px-6 py-4 text-right whitespace-nowrap font-medium text-slate-700 align-middle">
+                            {{ item.partnership_percentage|floatformat:2 }}%
+                        </td>
+
+                        <!-- DEDUCTION -->
+                        <td
+                            class="px-6 py-4 text-right whitespace-nowrap font-medium text-slate-700 align-middle tabular-nums">
+                            BD {{ item.partnership_deduction|floatformat:2 }}
+                        </td>
+
+                        <!-- ADJUSTED -->
+                        <td
+                            class="px-6 py-4 text-right whitespace-nowrap font-bold text-slate-800 align-middle tabular-nums">
+                            BD {{ item.adjusted_sales|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="10" class="px-6 py-10 text-center text-slate-500">
+                            No branch data available
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+                <!-- FOOTER -->
+                <tfoot class="border-t border-slate-200">
+
+                    <!-- TOTAL -->
+                    <tr class="bg-slate-50 font-bold text-slate-800">
+
+                        <td colspan="2" class="px-6 py-5 align-middle">
+                            Total
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap align-middle tabular-nums">
+                            BD {{ total_cashbalance|floatformat:2 }}
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap align-middle tabular-nums">
+                            BD {{ total_purchase|floatformat:2 }}
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap align-middle tabular-nums">
+                            BD {{ total_expense|floatformat:2 }}
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap align-middle tabular-nums">
+                            BD {{ total_transfers|floatformat:2 }}
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap align-middle tabular-nums">
+                            BD {{ total_sales|floatformat:2 }}
+                        </td>
+
+                        <td class="px-6 py-5 text-right align-middle">
+                            -
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap align-middle tabular-nums">
+                            BD {{ total_monthly_partnership_deduction|floatformat:2 }}
+                        </td>
+
+                        <td class="px-6 py-5 text-right align-middle">
+                            BD {{ total_adjusted_sales|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    <!-- TOTAL ADJUSTED SALES -->
+                    <tr class="bg-white border-t border-slate-100 font-semibold text-slate-800">
+
+                        <td colspan="9" class="px-6 py-5 align-middle">
+                            Total Adjusted Sales
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap font-bold align-middle tabular-nums">
+                            BD {{ total_adjusted_sales|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    <!-- AVG CASH BALANCE PER BRANCH -->
+                    <tr class="bg-slate-50 border-t border-slate-100 font-semibold text-slate-800">
+
+                        <td colspan="9" class="px-6 py-5 align-middle">
+                            Avg Cash Balance per Branch
+                        </td>
+
+                        <td class="px-6 py-5 text-right whitespace-nowrap font-bold align-middle tabular-nums">
+                            BD {{ avg_cash_balance_per_branch|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                </tfoot>
+
+            </table>
+
+        </div>
+
     </div>
 
-    <!-- Sales Transactions Table -->
+    <!-- Sales & Transfer Transactions Table -->
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Sale Transactions</div>
+        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Sales & Transfer Transactions</div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm text-left">
                 <thead class="bg-gray-100 border-b">
                     <tr>
                         <th class="px-5 py-4 uppercase tracking-wide">Date</th>
-                        <th class="px-5 py-4 uppercase tracking-wide">Branch</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">Type</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">From</th>
+                        <th class="px-5 py-4 uppercase tracking-wide">To</th>
                         <th class="px-5 py-4 uppercase tracking-wide">Description</th>
                         <th class="px-5 py-4 uppercase tracking-wide text-right">Amount</th>
                     </tr>
@@ -127,13 +418,30 @@
                     {% for sale in sales_transactions %}
                     <tr class="border-b hover:bg-gray-50">
                         <td class="px-5 py-4">{{ sale.created_on|date:"M d, Y H:i" }}</td>
+                        <td class="px-5 py-4">
+                            {% if sale.transaction_type == "SALE" %}
+                            <span
+                                class="inline-block px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">Sale</span>
+                            {% elif sale.transaction_type == "TRANSFER" %}
+                            <span
+                                class="inline-block px-2 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded">Transfer</span>
+                            {% endif %}
+                        </td>
                         <td class="px-5 py-4 font-semibold">{{ sale.branch.name }}</td>
+                        <td class="px-5 py-4 font-semibold">
+                            {% if sale.transaction_type == "TRANSFER" %}
+                            {{ sale.target_branch.name }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
                         <td class="px-5 py-4">{{ sale.description|default:"N/A" }}</td>
                         <td class="px-5 py-4 text-right">BD {{ sale.amount|floatformat:2 }}</td>
                     </tr>
                     {% empty %}
                     <tr class="border-b hover:bg-gray-50">
-                        <td class="px-5 py-4 text-gray-500 text-center" colspan="4">No sale transactions recorded</td>
+                        <td class="px-5 py-4 text-gray-500 text-center" colspan="6">No sales or transfer transactions
+                            recorded</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -239,7 +547,7 @@
                             {% elif entry.transaction_type == 'EXPENSE' %}
                             {{ entry.get_expense_category_display|default:"N/A" }}
                             {% elif entry.transaction_type == 'SALE' %}
-                            Sale
+                            Transfer
                             {% else %}
                             {{ entry.transaction_type }}
                             {% endif %}

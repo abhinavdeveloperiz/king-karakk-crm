@@ -10,7 +10,7 @@
     {% load static %}
 
     <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+   <link rel="stylesheet" href="{% static 'css/output.css' %}">
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -146,18 +146,7 @@
 
 
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    backgroundImage: {
-                        'gradient-primary': "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    },
 
-                },
-            },
-        }
-    </script>
 
 </head>
 
