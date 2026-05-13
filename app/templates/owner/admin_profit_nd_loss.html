@@ -5,10 +5,26 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl sm:text-3xl font-bold uppercase text-gray-900">Current Month Profit & Loss</h1>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3 uppercase">
+                <div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                </div>
+                Profit & Loss Statement
+            </h1>
             <p class="mt-2 text-sm text-gray-500">Current month P&amp;L report for {{ month_name }}, {{ year }} with
                 purchase, expense and office entry details.</p>
         </div>
+    </div>
+
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+
+        <a href="{% url 'branch_add' %}"
+            class="px-4 py-2 gradient-primary text-white rounded-xl hover:bg-gray-700 transition flex items-center gap-2 text-sm font-medium">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Add Branch
+        </a>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -34,7 +50,7 @@
                 <!-- ICON -->
                 <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 shadow-inner">
 
-                    <i data-lucide="badge-dollar-sign" class="w-7 h-7 text-emerald-600 stroke-[2.2]"></i>
+                    <i data-lucide="wallet" class="w-7 h-7 text-emerald-600 stroke-[2.2]"></i>
 
                 </div>
 
@@ -365,24 +381,13 @@
 
                     </tr>
 
-                    <!-- TOTAL ADJUSTED SALES -->
-                    <tr class="bg-white border-t border-slate-100 font-semibold text-slate-800">
 
-                        <td colspan="9" class="px-6 py-5 align-middle">
-                            Total Adjusted Sales
-                        </td>
-
-                        <td class="px-6 py-5 text-right whitespace-nowrap font-bold align-middle tabular-nums">
-                            BD {{ total_adjusted_sales|floatformat:2 }}
-                        </td>
-
-                    </tr>
 
                     <!-- AVG CASH BALANCE PER BRANCH -->
                     <tr class="bg-slate-50 border-t border-slate-100 font-semibold text-slate-800">
 
                         <td colspan="9" class="px-6 py-5 align-middle">
-                            Avg Cash Balance per Branch
+                            Avg Sales per Branch
                         </td>
 
                         <td class="px-6 py-5 text-right whitespace-nowrap font-bold align-middle tabular-nums">
@@ -400,11 +405,11 @@
     </div>
 
     <!-- Sales & Transfer Transactions Table -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Sales & Transfer Transactions</div>
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden ">
+        <div class="px-5 py-4  bg-gray-50 font-semibold text-gray-700">Sales & Transfer Transactions</div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm text-left">
-                <thead class="bg-gray-100 border-b">
+                <thead class="bg-gray-100 ">
                     <tr>
                         <th class="px-5 py-4 uppercase tracking-wide">Date</th>
                         <th class="px-5 py-4 uppercase tracking-wide">Type</th>
@@ -416,7 +421,7 @@
                 </thead>
                 <tbody>
                     {% for sale in sales_transactions %}
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class=" hover:bg-gray-50">
                         <td class="px-5 py-4">{{ sale.created_on|date:"M d, Y H:i" }}</td>
                         <td class="px-5 py-4">
                             {% if sale.transaction_type == "SALE" %}
@@ -439,7 +444,7 @@
                         <td class="px-5 py-4 text-right">BD {{ sale.amount|floatformat:2 }}</td>
                     </tr>
                     {% empty %}
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50">
                         <td class="px-5 py-4 text-gray-500 text-center" colspan="6">No sales or transfer transactions
                             recorded</td>
                     </tr>
@@ -450,11 +455,11 @@
     </div>
 
     <!-- Purchases Table -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Purchases</div>
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden ">
+        <div class="px-5 py-4 bg-gray-50 font-semibold text-gray-700">Purchases</div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm text-left">
-                <thead class="bg-gray-100 border-b">
+                <thead class="bg-gray-100">
                     <tr>
                         <th class="px-5 py-4 uppercase tracking-wide">Date</th>
                         <th class="px-5 py-4 uppercase tracking-wide">Category</th>
@@ -464,21 +469,21 @@
                 </thead>
                 <tbody>
                     {% for purchase in purchases %}
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50">
                         <td class="px-5 py-4">{{ purchase.created_on|date:"M d, Y" }}</td>
                         <td class="px-5 py-4">{{ purchase.get_purchase_category_display|default:"N/A" }}</td>
                         <td class="px-5 py-4">{{ purchase.description|default:"N/A" }}</td>
                         <td class="px-5 py-4 text-right">BD {{ purchase.amount|floatformat:2 }}</td>
                     </tr>
                     {% empty %}
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50">
                         <td class="px-5 py-4 text-gray-500 text-center" colspan="4">No purchases recorded</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="px-5 py-4 border-t bg-gray-50">
+        <div class="px-5 py-4 bg-gray-50">
             <div class="flex justify-between">
                 <span class="font-semibold text-gray-800">Total Purchases</span>
                 <span class="font-semibold">BD {{ total_purchase|floatformat:2 }}</span>
@@ -487,11 +492,11 @@
     </div>
 
     <!-- Expenses Table -->
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-        <div class="px-5 py-4 border-b bg-gray-50 font-semibold text-gray-700">Expenses</div>
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div class="px-5 py-4 bg-gray-50 font-semibold text-gray-700">Expenses</div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm text-left">
-                <thead class="bg-gray-100 border-b">
+                <thead class="bg-gray-100">
                     <tr>
                         <th class="px-5 py-4 uppercase tracking-wide">Date</th>
                         <th class="px-5 py-4 uppercase tracking-wide">Category</th>
@@ -501,21 +506,21 @@
                 </thead>
                 <tbody>
                     {% for expense in expenses %}
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50">
                         <td class="px-5 py-4">{{ expense.created_on|date:"M d, Y" }}</td>
                         <td class="px-5 py-4">{{ expense.get_expense_category_display|default:"N/A" }}</td>
                         <td class="px-5 py-4">{{ expense.description|default:"N/A" }}</td>
                         <td class="px-5 py-4 text-right">BD {{ expense.amount|floatformat:2 }}</td>
                     </tr>
                     {% empty %}
-                    <tr class="border-b hover:bg-gray-50">
+                    <tr class=" hover:bg-gray-50">
                         <td class="px-5 py-4 text-gray-500 text-center" colspan="4">No expenses recorded</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="px-5 py-4 border-t bg-gray-50">
+        <div class="px-5 py-4 bg-gray-50">
             <div class="flex justify-between">
                 <span class="font-semibold text-gray-800">Total Expenses</span>
                 <span class="font-semibold">BD {{ total_expense|floatformat:2 }}</span>
@@ -523,7 +528,7 @@
         </div>
     </div>
 
-    <div class="bg-red-50 rounded-2xl shadow-lg overflow-hidden border border-red-200">
+    <div class="bg-red-50 rounded-2xl shadow-lg overflow-hidden">
         <div class="px-5 py-4 bg-red-500 text-white font-semibold text-lg">Entry from Office</div>
         <div class="overflow-x-auto bg-white">
             <table class="min-w-full text-sm text-left">
@@ -538,7 +543,7 @@
                 </thead>
                 <tbody>
                     {% for entry in office_entries %}
-                    <tr class="border-b hover:bg-red-50">
+                    <tr class="hover:bg-red-50">
                         <td class="px-5 py-4">{{ entry.created_on|date:"M d, Y" }}</td>
                         <td class="px-5 py-4 font-semibold">{{ entry.get_transaction_type_display }}</td>
                         <td class="px-5 py-4">
@@ -556,7 +561,7 @@
                         <td class="px-5 py-4 text-right">BD {{ entry.amount|floatformat:2 }}</td>
                     </tr>
                     {% empty %}
-                    <tr class="border-b hover:bg-red-50">
+                    <tr class="hover:bg-red-50">
                         <td class="px-5 py-4 text-gray-500 text-center" colspan="5">No office entries recorded</td>
                     </tr>
                     {% endfor %}

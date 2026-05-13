@@ -55,7 +55,7 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
 
         <!-- Total Expenses (RED = money going out) -->
-        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition text-center">
             <h3 class="text-xs uppercase tracking-wide text-gray-500">Total Expenses</h3>
             <p class="mt-1 text-2xl font-bold text-red-600">
                 BD {{ total_expense|intcomma }}
@@ -63,7 +63,7 @@
         </div>
 
         <!-- Total Purchase (PURPLE = inventory/investment) -->
-        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition text-center">
             <h3 class="text-xs uppercase tracking-wide text-gray-500">Total Purchase</h3>
             <p class="mt-1 text-2xl font-bold text-purple-600">
                 BD {{ total_purchase|intcomma }}
@@ -71,7 +71,7 @@
         </div>
 
         <!-- Cash Balance (BLUE = stable money) -->
-        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition text-center ">
             <h3 class="text-xs uppercase tracking-wide text-gray-500">Cash Balance</h3>
             <p class="mt-1 text-2xl font-bold text-blue-600">
                 BD {{ total_cashbalance|intcomma }}
@@ -79,7 +79,7 @@
         </div>
 
         <!-- Total Sales (GREEN = income) -->
-        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition text-center ">
             <h3 class="text-xs uppercase tracking-wide text-gray-500">Total Sales</h3>
             <p class="mt-1 text-2xl font-bold text-green-600">
                 BD {{ balance_total|intcomma }}
@@ -87,7 +87,7 @@
         </div>
 
         <!-- Total Transfer (ORANGE = transfer out) -->
-        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition text-center ">
             <h3 class="text-xs uppercase tracking-wide text-gray-500">Total Transfer</h3>
             <p class="mt-1 text-2xl font-bold text-orange-600">
                 BD {{ total_transfer|intcomma }}
@@ -95,7 +95,7 @@
         </div>
 
         <!-- Received Transfer (CYAN = transfer in) -->
-        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg transition text-center border">
+        <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl transition text-center ">
             <h3 class="text-xs uppercase tracking-wide text-gray-500">Received Transfer</h3>
             <p class="mt-1 text-2xl font-bold text-cyan-600">
                 BD {{ total_received_transfer|intcomma }}

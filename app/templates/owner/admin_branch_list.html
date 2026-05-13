@@ -23,8 +23,14 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
         {% for branch in branches %}
-        <div
-            class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden border border-gray-100">
+        <div class="
+    {% if branch.name == 'office' %}
+         bg-white border border-green-500
+    {% else %}
+        bg-white border-gray-100
+    {% endif %}
+    rounded-xl shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 overflow-hidden border
+">
             <div class="p-5">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-3">

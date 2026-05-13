@@ -79,14 +79,14 @@ class BranchTransactionCreateForm(forms.ModelForm):
         ]
 
         widgets = {
-            "transaction_type": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
-            "target_branch": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
-            "purchase_category": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
-            "expense_category": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
-            "cashbalance_category": forms.Select(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
-            "amount": forms.NumberInput(attrs={"class": "form-input w-full border-2 rounded-lg p-2"}),
-            "description": forms.Textarea(attrs={"class": "form-input w-full border-2 rounded-lg p-2", "rows": 2}),
-            "created_on": forms.DateInput(attrs={"type": "date", "class": "form-input w-full border-2 rounded-lg p-2"}),
+            "transaction_type": forms.Select(attrs={"class": "form-input w-full border border-gray-300  rounded-lg p-2"}),
+            "target_branch": forms.Select(attrs={"class": "form-input w-full border border-gray-300  rounded-lg p-2"}),
+            "purchase_category": forms.Select(attrs={"class": "form-input w-full border border-gray-300  rounded-lg p-2"}),
+            "expense_category": forms.Select(attrs={"class": "form-input w-full border border-gray-300  rounded-lg p-2"}),
+            "cashbalance_category": forms.Select(attrs={"class": "form-input w-full border border-gray-300   rounded-lg p-2"}),
+            "amount": forms.NumberInput(attrs={"class": "form-input w-full border border-gray-300  rounded-lg p-2"}),
+            "description": forms.Textarea(attrs={"class": "form-input w-full border border-gray-300  rounded-lg p-2", "rows": 2}),
+            "created_on": forms.DateInput(attrs={"type": "date", "class": "form-input w-full border border-gray-300  rounded-lg p-2"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -177,35 +177,35 @@ class AdminBranchTransactionCreateForm(forms.ModelForm):
 
         widgets = {
             "transaction_type": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+                attrs={"class": "form-input w-full border border-gray-300 rounded-lg p-2"}
             ),
 
             "target_branch": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+                attrs={"class": "form-input w-full border border-gray-300 rounded-lg p-2"}
             ),
 
             "purchase_category": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+                attrs={"class": "form-input w-full border border-gray-300 rounded-lg p-2"}
             ),
 
             "expense_category": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+                attrs={"class": "form-input w-full border border-gray-300 rounded-lg p-2"}
             ),
 
             "cashbalance_category": forms.Select(
-                attrs={"class": "form-input w-full border-2 rounded-lg p-2"}
+                attrs={"class": "form-input w-full border border-gray-300 rounded-lg p-2"}
             ),
 
             "amount": forms.NumberInput(
                 attrs={
-                    "class": "form-input w-full border-2 rounded-lg p-2",
+                    "class": "form-input w-full border border-gray-300 rounded-lg p-2",
                     "placeholder": "Enter Amount"
                 }
             ),
 
             "description": forms.Textarea(
                 attrs={
-                    "class": "form-input w-full border-2 rounded-lg p-2",
+                    "class": "form-input w-full border border-gray-300 rounded-lg p-2",
                     "rows": 2
                 }
             ),
@@ -213,7 +213,7 @@ class AdminBranchTransactionCreateForm(forms.ModelForm):
             "created_on": forms.DateInput(
                 attrs={
                     "type": "date",
-                    "class": "form-input w-full border-2 rounded-lg p-2"
+                    "class": "form-input w-full border border-gray-300 rounded-lg p-2"
                 }
             ),
         }

@@ -30,13 +30,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://king-karakk-crm.up.railway.app",
-    "http://localhost",
-    "http://127.0.0.1",
-]
-
-
 
 
 
@@ -92,33 +85,25 @@ WSGI_APPLICATION = 'kingkarakk.wsgi.application'
 
 
 
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+
+
+
+
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'inspirez_kingkarakk',
+        'USER': 'inspirez_kingkarakk',
+        'PASSWORD': '@pass#192018@',
+        'HOST': 's3032.bom1.stableserver.net',
+        'PORT': '3306',
+
     }
 }
-
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'kingkarak',     
-#         'USER': 'root',
-#         'PASSWORD': '@pass#192018@',
-#         'HOST': 'localhost',         
-#         'PORT': '3306',
-#         'OPTIONS': {
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#         },
-#     }
-# }
-
 
 
 
@@ -153,7 +138,7 @@ TIME_ZONE = 'Asia/Bahrain'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

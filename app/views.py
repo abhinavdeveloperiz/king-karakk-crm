@@ -151,7 +151,7 @@ def admin_profile(request):
 
 
     # today transactions
-    today = timezone.localdate()
+    today = date.today()
     today_transactions = Transaction.objects.filter(created_on__date=today)
 
     today_totals = today_transactions.aggregate(
@@ -190,19 +190,21 @@ def admin_profile(request):
 
 @login_required(login_url="login")
 def admin_profit_nd_loss(request):
-    today = timezone.localtime()
+    today = date.today()
     current_year = today.year
     current_month = today.month
     current_month_name = calendar.month_name[current_month]
 
+    last_day = calendar.monthrange(current_year, current_month)[1]
+    start_of_month = datetime(current_year, current_month, 1)
+    end_of_month = datetime(current_year, current_month, last_day, 23, 59, 59, 999999)
+
     transactions_all = Transaction.objects.filter(
-        created_on__year=current_year,
-        created_on__month=current_month,
+        created_on__range=(start_of_month, end_of_month),
     ).exclude(branch__name__iexact="office")
     
     office_transactions = Transaction.objects.filter(
-        created_on__year=current_year,
-        created_on__month=current_month,
+        created_on__range=(start_of_month, end_of_month),
         branch__name__iexact="office"
     )
 
@@ -219,8 +221,8 @@ def admin_profit_nd_loss(request):
         total=Sum("amount", default=Decimal("0.00"))
     )["total"] or Decimal("0.00")
 
-    # Sales calculation: CashBalance - Purchase - Expense
-    total_sales = cashbalance - purchase - expense
+    # Total cash balance is treated as sales revenue in this report.
+    total_sales = cashbalance
 
     # Profit calculation: Sales - Purchase - Expense
     profit = total_sales - purchase - expense
@@ -237,18 +239,24 @@ def admin_profit_nd_loss(request):
     # Get office entry transactions (all types from office branch)
     office_entries = office_transactions.order_by('-created_on')
 
-    # Get all branches for daily branch-wise breakdown
     branches = Branch.objects.exclude(name__iexact="office")
     
-    # Get all unique dates from transactions
-    transaction_dates = transactions_all.values_list('created_on__date', flat=True).distinct().order_by('-created_on__date')
+    transaction_dates = (
+    transactions_all
+    .exclude(created_on__isnull=True)
+    .values_list('created_on__date', flat=True)
+    .distinct()
+    .order_by('-created_on__date')
+)
     
     daily_branch_breakdown = []
     total_monthly_partnership_deduction = Decimal("0.00")
     
     for txn_date in transaction_dates:
-        start_of_day = timezone.make_aware(datetime.combine(txn_date, time.min))
-        end_of_day = timezone.make_aware(datetime.combine(txn_date, time.max))
+        if txn_date is None:
+            continue
+        start_of_day = datetime.combine(txn_date, time.min)
+        end_of_day = datetime.combine(txn_date, time.max)
         
         for branch in branches:
             day_txns = transactions_all.filter(
@@ -280,8 +288,9 @@ def admin_profit_nd_loss(request):
             
             total_monthly_partnership_deduction += partnership_deduction
             
-            # Only add if there's any transaction for this date-branch combination
-            if day_purchase > 0 or day_expense > 0 or day_cashbalance > 0:
+            # Include branch rows when any relevant daily transaction exists
+            if any([day_purchase,day_expense,day_cashbalance,day_transfers]):
+
                 daily_branch_breakdown.append({
                     "date": txn_date,
                     "branch": branch,
@@ -370,7 +379,7 @@ def admin_profit_nd_loss(request):
 
 @login_required(login_url="login")
 def daily_sales_report(request):
-    today = timezone.localdate()
+    today = date.today()
     current_month = today.month
     current_year = today.year
 
@@ -386,8 +395,8 @@ def daily_sales_report(request):
     daily_data = []
     for day in range(1, last_day + 1):
         day_date = date(current_year, current_month, day)
-        start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
-        end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
+        start_of_day = datetime.combine(day_date, time.min)
+        end_of_day = datetime.combine(day_date, time.max)
 
         day_branches = []
         total_day_sales = Decimal('0.00')
@@ -456,7 +465,7 @@ def export_monthly_report(request):
     from django.http import HttpResponse
     from io import BytesIO
 
-    today = timezone.localdate()
+    today = date.today()
     current_month = today.month
     current_year = today.year
 
@@ -492,8 +501,8 @@ def export_monthly_report(request):
     row_num = 2
     for day in range(1, last_day + 1):
         day_date = date(current_year, current_month, day)
-        start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
-        end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
+        start_of_day = datetime.combine(day_date, time.min)
+        end_of_day = datetime.combine(day_date, time.max)
 
         day_branches = []
         total_day_sales = Decimal('0.00')
@@ -543,8 +552,8 @@ def export_monthly_report(request):
         branch_total_sales = Decimal('0.00')
         for day in range(1, last_day + 1):
             day_date = date(current_year, current_month, day)
-            start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
-            end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
+            start_of_day = datetime.combine(day_date, time.min)
+            end_of_day = datetime.combine(day_date, time.max)
             transactions = Transaction.objects.filter(
                 branch=branch,
                 created_on__range=(start_of_day, end_of_day)
@@ -604,7 +613,7 @@ from calendar import monthrange
 @login_required(login_url="login")
 def Admin_cashflow(request):
 
-    today = timezone.localdate()
+    today = date.today()
 
     selected_month = int(request.GET.get("month", today.month))
     selected_year = int(request.GET.get("year", today.year))
@@ -624,8 +633,8 @@ def Admin_cashflow(request):
     for day in range(1, last_day + 1):
         day_date = date(selected_year, selected_month, day)
 
-        start_of_day = timezone.make_aware(datetime.combine(day_date, time.min))
-        end_of_day = timezone.make_aware(datetime.combine(day_date, time.max))
+        start_of_day = datetime.combine(day_date, time.min)
+        end_of_day = datetime.combine(day_date, time.max)
 
         day_transactions = Transaction.objects.filter(
             created_on__range=(start_of_day, end_of_day)
@@ -800,7 +809,7 @@ def branch_delete(request, branch_id):
 def branch_detail(request, branch_id):
     branch = get_object_or_404(Branch, id=branch_id)
 
-    today = timezone.localdate()
+    today = date.today()
     
     # Get selected date from request, default to today
     selected_date_str = request.GET.get("date")
@@ -813,8 +822,8 @@ def branch_detail(request, branch_id):
     else:
         selected_date = today
 
-    start_of_day = timezone.make_aware(datetime.combine(selected_date, time.min))
-    end_of_day = timezone.make_aware(datetime.combine(selected_date, time.max))
+    start_of_day = datetime.combine(selected_date, time.min)
+    end_of_day = datetime.combine(selected_date, time.max)
    
     transactions = Transaction.objects.filter(
         branch=branch,
@@ -934,7 +943,7 @@ def admin_add_transaction_to_branch(request, branch_id):
             transaction = form.save(commit=False)
             transaction.branch = branch
             selected_date = form.cleaned_data['created_on']
-            transaction.created_on = timezone.make_aware(datetime.combine(selected_date, timezone.now().time()))
+            transaction.created_on = datetime.combine(selected_date, datetime.now().time())
             transaction.full_clean()
             transaction.save()
 
@@ -984,14 +993,14 @@ def branch_dashboard(request):
     except Branch.DoesNotExist:
         branch = None
 
-    today = timezone.localdate()
+    today = date.today()
 
     total_sales = total_expense = total_purchase = total_cashbalance = balance_total = Decimal("0.00")
     chart_data = {"labels": [], "values": []}
 
     if branch:
-        start_of_day = timezone.make_aware(datetime.combine(today, time.min))
-        end_of_day = timezone.make_aware(datetime.combine(today, time.max))
+        start_of_day = datetime.combine(today, time.min)
+        end_of_day = datetime.combine(today, time.max)
         transactions = branch.transactions.filter(created_on__gte=start_of_day, created_on__lte=end_of_day)
 
         totals = transactions.aggregate(
@@ -1068,7 +1077,7 @@ def branch_expense_sales_list(request):
         messages.error(request, "You do not have a branch assigned.")
         return redirect("branch_dashboard")
 
-    today = timezone.localdate()
+    today = date.today()
     
     # Get selected date from request, default to today
     selected_date_str = request.GET.get("date")
@@ -1081,8 +1090,8 @@ def branch_expense_sales_list(request):
     else:
         selected_date = today
 
-    start_of_day = timezone.make_aware(datetime.combine(selected_date, time.min))
-    end_of_day = timezone.make_aware(datetime.combine(selected_date, time.max))
+    start_of_day = datetime.combine(selected_date, time.min)
+    end_of_day = datetime.combine(selected_date, time.max)
 
     transactions = branch.transactions.filter(
         created_on__gte=start_of_day, created_on__lte=end_of_day
